@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Icons } from '../constants.tsx';
+import { Icons } from '../constants';
 
 interface LayoutProps {
   children: React.ReactNode;

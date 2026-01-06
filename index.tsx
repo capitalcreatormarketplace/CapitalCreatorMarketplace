@@ -1,6 +1,12 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
+
+// World-class safety: Ensure 'process' exists in the global scope to prevent crashes
+if (typeof (window as any).process === 'undefined') {
+  (window as any).process = { env: {} };
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

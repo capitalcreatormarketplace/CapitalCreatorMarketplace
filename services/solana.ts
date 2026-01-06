@@ -1,5 +1,6 @@
-import { TREASURY_WALLET, PLATFORM_FEE_PERCENT } from '../constants.tsx';
-import { TransactionResult } from '../types.ts';
+
+import { TREASURY_WALLET, PLATFORM_FEE_PERCENT } from '../constants';
+import { TransactionResult } from '../types';
 
 /**
  * Mocks a Solana transaction for the Capital Creator platform.

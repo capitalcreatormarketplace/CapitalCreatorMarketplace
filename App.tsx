@@ -11,50 +11,47 @@ const INITIAL_ITEMS: InventoryItem[] = [
   {
     id: 'inv_1',
     creatorAddress: '8x8j...',
-    creatorName: 'ChartMaster',
+    creatorName: 'CHARTMASTER',
     streamTime: 'Monday July 13th 2pm - 4pm',
-    placementDetail: 'Crypto podcast',
+    placementDetail: 'High-Alpha Crypto Podcast Spot',
     priceSol: 4.5,
     sold: false,
     platform: 'YouTube',
     thumbnailUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?q=80&w=800&auto=format&fit=crop',
-    adPosition: 'bottom-left'
+    adPosition: 'bottom-left',
+    creatorRevenue: 12500,
+    creatorHires: 42,
+    creatorAvgAudience: 15000
   },
   {
     id: 'inv_2',
     creatorAddress: '4y9k...',
-    creatorName: 'The Paul Show',
+    creatorName: 'THE PAUL SHOW',
     streamTime: 'Monday July 13th 2pm - 4pm',
-    placementDetail: 'Crypto podcast',
+    placementDetail: 'Premium Overlay Placement',
     priceSol: 12.0,
     sold: false,
     platform: 'X',
     thumbnailUrl: 'https://images.unsplash.com/photo-1593340073024-d0f91373ec36?q=80&w=800&auto=format&fit=crop',
-    adPosition: 'top-right'
+    adPosition: 'top-right',
+    creatorRevenue: 85000,
+    creatorHires: 112,
+    creatorAvgAudience: 45000
   },
   {
     id: 'inv_3',
     creatorAddress: '7u2p...',
-    creatorName: 'Discover Crypto',
+    creatorName: 'DISCOVER CRYPTO',
     streamTime: 'Monday July 13th 2pm - 4pm',
-    placementDetail: 'Crypto podcast',
+    placementDetail: 'Mid-Roll Shoutout & Banner',
     priceSol: 8.2,
     sold: false,
     platform: 'YouTube',
     thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop',
-    adPosition: 'bottom-right'
-  },
-  {
-    id: 'inv_4',
-    creatorAddress: '9l1m...',
-    creatorName: 'Altcoin Daily',
-    streamTime: 'Monday July 13th 2pm - 4pm',
-    placementDetail: 'Crypto podcast',
-    priceSol: 15.5,
-    sold: false,
-    platform: 'YouTube',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1551817958-c115383e9c2e?q=80&w=800&auto=format&fit=crop',
-    adPosition: 'bottom-left'
+    adPosition: 'bottom-right',
+    creatorRevenue: 34000,
+    creatorHires: 28,
+    creatorAvgAudience: 22000
   }
 ];
 
@@ -75,7 +72,10 @@ const App: React.FC = () => {
           address: addr,
           name: '',
           bio: '',
-          role: UserRole.UNDEFINED
+          role: UserRole.UNDEFINED,
+          revenueEarned: 0,
+          timesHired: 0,
+          avgAudienceSize: 0
         });
         setCurrentView('profile');
       }
@@ -104,14 +104,18 @@ const App: React.FC = () => {
     const newItem: InventoryItem = {
       id: `inv_${Math.random().toString(36).substr(2, 9)}`,
       creatorAddress: profile.address,
-      creatorName: profile.name,
+      creatorName: profile.name.toUpperCase(),
       streamTime: data.streamTime,
       placementDetail: optimized,
       priceSol: data.priceSol,
       sold: false,
       platform: data.platform,
       thumbnailUrl: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
-      adPosition: 'bottom-right'
+      adPosition: 'bottom-right',
+      // Attach current creator stats to listing
+      creatorRevenue: profile.revenueEarned,
+      creatorHires: profile.timesHired,
+      creatorAvgAudience: profile.avgAudienceSize
     };
 
     setInventory([newItem, ...inventory]);

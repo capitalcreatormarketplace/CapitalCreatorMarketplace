@@ -17,6 +17,10 @@ export interface UserProfile {
   bio: string;
   role: UserRole;
   avatarUrl?: string;
+  // Creator Metrics
+  revenueEarned?: number;
+  timesHired?: number;
+  avgAudienceSize?: number;
 }
 
 export interface SponsorApplication {
@@ -40,6 +44,10 @@ export interface InventoryItem {
   platform: 'Twitch' | 'YouTube' | 'Kick' | 'X';
   thumbnailUrl: string;
   adPosition: AdPosition;
+  // Stats inherited from creator at listing time
+  creatorRevenue?: number;
+  creatorHires?: number;
+  creatorAvgAudience?: number;
 }
 
 export interface TransactionResult {

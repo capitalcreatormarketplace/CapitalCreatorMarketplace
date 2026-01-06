@@ -39,46 +39,109 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 py-8 animate-fadeIn">
+    <div className="max-w-4xl mx-auto space-y-12 py-8 animate-fadeIn pb-24">
       {/* Profile Header */}
-      <section className="glass p-8 rounded-2xl border-white/20">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-          <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden">
+      <section className="glass p-10 rounded-2xl border-white/20">
+        <div className="flex flex-col md:flex-row items-start gap-10">
+          <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden shrink-0">
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-3xl font-bold opacity-20">{profile.address.slice(0,2)}</span>
+              <span className="text-3xl font-bold opacity-20">{profile.address.slice(0,2).toUpperCase()}</span>
             )}
           </div>
           
-          <div className="flex-grow">
+          <div className="flex-grow w-full">
             {editing ? (
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="Your Name"
-                  className="w-full bg-black/50 border border-white/20 p-3 rounded text-xl font-bold"
-                  value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  required
-                />
-                <textarea 
-                  placeholder="Profile Bio"
-                  className="w-full bg-black/50 border border-white/20 p-3 rounded"
-                  value={formData.bio}
-                  onChange={e => setFormData({...formData, bio: e.target.value})}
-                  required
-                />
-                <button type="submit" className="bg-white text-black px-6 py-2 font-bold rounded uppercase text-sm">Save Profile</button>
+              <form onSubmit={handleProfileSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest">Creator/Project Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. ChartMaster"
+                      className="w-full bg-black/50 border border-white/10 p-4 rounded text-lg font-bold focus:border-white/40 outline-none"
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest">Avg Audience Size</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 5000"
+                      className="w-full bg-black/50 border border-white/10 p-4 rounded text-lg font-bold focus:border-white/40 outline-none"
+                      value={formData.avgAudienceSize}
+                      onChange={e => setFormData({...formData, avgAudienceSize: Number(e.target.value)})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest">Total Ad Revenue Earned ($)</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 10000"
+                      className="w-full bg-black/50 border border-white/10 p-4 rounded text-lg font-bold focus:border-white/40 outline-none"
+                      value={formData.revenueEarned}
+                      onChange={e => setFormData({...formData, revenueEarned: Number(e.target.value)})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest">Times Hired by Sponsors</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 15"
+                      className="w-full bg-black/50 border border-white/10 p-4 rounded text-lg font-bold focus:border-white/40 outline-none"
+                      value={formData.timesHired}
+                      onChange={e => setFormData({...formData, timesHired: Number(e.target.value)})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] uppercase text-zinc-500 font-bold tracking-widest">Project Biography</label>
+                  <textarea 
+                    placeholder="Briefly describe your channel and audience demographics..."
+                    className="w-full bg-black/50 border border-white/10 p-4 rounded min-h-[120px] focus:border-white/40 outline-none"
+                    value={formData.bio}
+                    onChange={e => setFormData({...formData, bio: e.target.value})}
+                    required
+                  />
+                </div>
+                <button type="submit" className="bg-white text-black px-10 py-4 font-black rounded-none uppercase text-xs tracking-widest hover:bg-zinc-200 transition-all">Save Profile & Stats</button>
               </form>
             ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-3xl font-black uppercase tracking-tighter">{profile.name || 'Anonymous User'}</h2>
-                  <button onClick={() => setEditing(true)} className="text-xs text-gray-500 hover:text-white uppercase">Edit</button>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                  <div>
+                    <h2 className="text-4xl font-black uppercase tracking-tighter">{profile.name || 'Anonymous Project'}</h2>
+                    <p className="mono text-[10px] opacity-30 mt-1 uppercase tracking-widest">{profile.address}</p>
+                  </div>
+                  <button onClick={() => setEditing(true)} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5 transition-all">Edit Profile</button>
                 </div>
-                <p className="text-gray-400">{profile.bio || 'Enter a bio to complete your identity on Capital Creator.'}</p>
-                <p className="mono text-xs opacity-50">{profile.address}</p>
+                
+                <div className="grid grid-cols-3 gap-8 py-2">
+                  <div className="space-y-1">
+                    <p className="text-[9px] uppercase text-zinc-500 font-black tracking-widest">Revenue Earned</p>
+                    <p className="text-2xl font-mono font-bold">${profile.revenueEarned?.toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] uppercase text-zinc-500 font-black tracking-widest">Times Hired</p>
+                    <p className="text-2xl font-mono font-bold">{profile.timesHired}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] uppercase text-zinc-500 font-black tracking-widest">Avg Audience</p>
+                    <p className="text-2xl font-mono font-bold">{profile.avgAudienceSize?.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <p className="text-zinc-400 leading-relaxed text-sm italic max-w-2xl">{profile.bio || 'Your project stats are locked in. Ready to list inventory.'}</p>
               </div>
             )}
           </div>

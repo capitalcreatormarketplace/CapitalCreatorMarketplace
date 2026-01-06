@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +22,6 @@
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
     
-    /* Futuristic Scanline Effect - Reduced opacity for better readability */
     body::before {
       content: " ";
       display: block;
@@ -42,37 +42,12 @@
       border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
-    .futuristic-border {
-      position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .futuristic-border::after {
-      content: "";
-      position: absolute;
-      top: -1px; left: -1px; right: -1px; bottom: -1px;
-      border: 1px solid transparent;
-      background: linear-gradient(45deg, transparent 40%, white 50%, transparent 60%);
-      background-size: 200% 200%;
-      pointer-events: none;
-      opacity: 0.1;
-      animation: border-glow 4s linear infinite;
-    }
-
-    @keyframes border-glow {
-      0% { background-position: 200% 200%; }
-      100% { background-position: -200% -200%; }
-    }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fadeIn {
       animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .tracking-widest-xl {
-      letter-spacing: 0.5em;
     }
   </style>
 <script type="importmap">
@@ -90,5 +65,6 @@
 </head>
 <body>
   <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>

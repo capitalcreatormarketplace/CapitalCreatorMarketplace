@@ -1,5 +1,5 @@
 import React from 'react';
-import { InventoryItem, SponsorStatus, AdPosition } from '../types';
+import { InventoryItem, SponsorStatus, AdPosition } from '../types.ts';
 
 interface MarketplaceProps {
   items: InventoryItem[];

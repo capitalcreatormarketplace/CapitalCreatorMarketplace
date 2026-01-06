@@ -1,11 +1,10 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import Layout from './components/Layout';
-import Marketplace from './components/Marketplace';
-import ProfileSetup from './components/ProfileSetup';
-import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus } from './types';
-import { connectWallet, processPayment } from './services/solana';
-import { optimizeListingDescription } from './services/gemini';
+import React, { useState } from 'react';
+import Layout from './components/Layout.tsx';
+import Marketplace from './components/Marketplace.tsx';
+import ProfileSetup from './components/ProfileSetup.tsx';
+import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus } from './types.ts';
+import { connectWallet, processPayment } from './services/solana.ts';
+import { optimizeListingDescription } from './services/gemini.ts';
 
 const INITIAL_ITEMS: InventoryItem[] = [
   {

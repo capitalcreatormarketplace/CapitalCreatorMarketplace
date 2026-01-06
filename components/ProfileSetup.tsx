@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import { UserProfile, UserRole, SponsorApplication, SponsorStatus } from '../types';
-import { Icons } from '../constants';
+import { UserProfile, UserRole, SponsorApplication, SponsorStatus } from '../types.ts';
+import { Icons } from '../constants.tsx';
 
 interface ProfileSetupProps {
   profile: UserProfile;

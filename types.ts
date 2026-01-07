@@ -29,7 +29,7 @@ export interface UserProfile {
   role: UserRole;
   avatarUrl?: string;
   // New Brand/Creator Fields
-  platform?: string;
+  platforms?: string[]; // Array for multi-platform support
   channelLink?: string;
   niche?: string;
   timezone?: string;
@@ -59,7 +59,7 @@ export interface InventoryItem {
   placementDetail: string;
   priceSol: number; 
   sold: boolean;
-  platform: 'Twitch' | 'YouTube' | 'Kick' | 'X' | 'Facebook' | 'Zora' | 'PumpFun' | 'Rumble' | 'Instagram';
+  platforms: string[]; // Array for multi-platform support
   category: ContentCategory;
   thumbnailUrl: string;
   adPosition: AdPosition;

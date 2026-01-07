@@ -12,6 +12,8 @@ interface ProfileSetupProps {
   onListInventory: (item: any) => void;
 }
 
+const PLATFORM_OPTIONS = ['YouTube', 'Twitch', 'Facebook', 'X', 'Kick', 'Zora', 'PumpFun', 'Rumble', 'Instagram', 'TikTok'];
+
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
@@ -67,8 +69,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const [invData, setInvData] = useState({
     streamTime: '', 
     placementDetail: '',
-    priceSol: 100, // USDC Default
-    platform: 'YouTube' as const,
+    priceSol: 100, 
+    platforms: [] as string[], // Changed to array
     category: ContentCategory.CRYPTO,
     adPosition: 'bottom-right' as AdPosition,
     streamPreviewUrl: ''
@@ -78,6 +80,18 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     e.preventDefault();
     onSaveProfile(formData);
     setIsEditing(false);
+  };
+
+  const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
+    if (isProfile) {
+      const current = formData.platforms || [];
+      const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
+      setFormData({...formData, platforms: updated});
+    } else {
+      const current = invData.platforms;
+      const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
+      setInvData({...invData, platforms: updated});
+    }
   };
 
   const handleAvatarClick = () => {
@@ -111,17 +125,18 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       alert("Please upload a stream preview image first.");
       return;
     }
+    if (invData.platforms.length === 0) {
+      alert("Please select at least one broadcast host.");
+      return;
+    }
 
-    // Construct final timestamp adjusted for selected timezone
     const d = new Date(availableDays[selectedDayIdx]);
     let hourNum = parseInt(selectedTime.hour);
     if (selectedTime.period === 'PM' && hourNum !== 12) hourNum += 12;
     if (selectedTime.period === 'AM' && hourNum === 12) hourNum = 0;
     
-    // Set components
     d.setHours(hourNum, parseInt(selectedTime.minute), 0, 0);
 
-    // Apply offset adjustment to normalize to UTC
     const tz = timezones.find(t => t.label === selectedTime.timezone) || timezones[0];
     const utcTime = new Date(d.getTime() - (tz.offset * 60 * 60 * 1000));
     
@@ -214,18 +229,22 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" value={formData.platform || 'YouTube'} onChange={e => setFormData({...formData, platform: e.target.value})}>
-                      <option value="YouTube">YouTube</option>
-                      <option value="Twitch">Twitch</option>
-                      <option value="X">X (Twitter)</option>
-                      <option value="Kick">Kick</option>
-                      <option value="TikTok">TikTok</option>
-                      <option value="PumpFun">PumpFun</option>
-                      <option value="Instagram">Instagram</option>
-                      <option value="Zora">Zora</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Broadcast Cluster (Select Multiple)</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {PLATFORM_OPTIONS.map(p => {
+                        const isSel = (formData.platforms || []).includes(p);
+                        return (
+                          <button 
+                            key={p} 
+                            type="button"
+                            onClick={() => handleTogglePlatform(p, true)}
+                            className={`p-3 border text-[9px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F] shadow-[0_0_10px_rgba(191,149,63,0.3)]' : 'bg-black/40 text-zinc-500 border-white/10 hover:border-white/30'}`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -274,7 +293,11 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">{profile.name}</h2>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
                     <p className="mono text-[9px] opacity-40 uppercase tracking-[0.3em] font-bold">{profile.address}</p>
-                    <span className="text-[10px] bg-[#BF953F]/10 text-[#BF953F] px-4 py-1.5 font-black uppercase tracking-widest border border-[#BF953F]/20">{profile.platform}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {(profile.platforms || []).map(p => (
+                        <span key={p} className="text-[10px] bg-[#BF953F]/10 text-[#BF953F] px-4 py-1.5 font-black uppercase tracking-widest border border-[#BF953F]/20">{p}</span>
+                      ))}
+                    </div>
                     <span className="text-[10px] bg-white/5 text-zinc-400 px-4 py-1.5 font-black uppercase tracking-widest border border-white/10">{profile.role} STATION</span>
                   </div>
                 </div>
@@ -376,45 +399,40 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">4. Select Event Start Time & Zone</label>
                     <div className="flex flex-wrap gap-4">
-                      <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
-                        value={selectedTime.hour}
-                        onChange={e => setSelectedTime({...selectedTime, hour: e.target.value})}
-                      >
+                      <select className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]" value={selectedTime.hour} onChange={e => setSelectedTime({...selectedTime, hour: e.target.value})}>
                         {Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map(h => <option key={h} value={h}>{h}</option>)}
                       </select>
-                      <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
-                        value={selectedTime.minute}
-                        onChange={e => setSelectedTime({...selectedTime, minute: e.target.value})}
-                      >
+                      <select className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]" value={selectedTime.minute} onChange={e => setSelectedTime({...selectedTime, minute: e.target.value})}>
                         {['00', '15', '30', '45'].map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
-                      <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
-                        value={selectedTime.period}
-                        onChange={e => setSelectedTime({...selectedTime, period: e.target.value})}
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
+                      <select className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]" value={selectedTime.period} onChange={e => setSelectedTime({...selectedTime, period: e.target.value})}>
+                        <option value="AM">AM</option><option value="PM">PM</option>
                       </select>
-                      <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-[2] focus:border-[#BF953F] min-w-[150px]"
-                        value={selectedTime.timezone}
-                        onChange={e => setSelectedTime({...selectedTime, timezone: e.target.value})}
-                      >
+                      <select className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-[2] focus:border-[#BF953F] min-w-[150px]" value={selectedTime.timezone} onChange={e => setSelectedTime({...selectedTime, timezone: e.target.value})}>
                         {timezones.map(tz => <option key={tz.label} value={tz.label}>{tz.label}</option>)}
                       </select>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-10 pt-4 border-t border-white/5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-4 border-t border-white/5">
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Streaming Host</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
-                      <option>YouTube</option><option>Twitch</option><option>Facebook</option><option>X</option><option>Kick</option><option>Zora</option><option>PumpFun</option><option>Rumble</option><option>Instagram</option>
-                    </select>
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Streaming Host Cluster (Select All Applicable)</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {PLATFORM_OPTIONS.map(p => {
+                        const isSel = invData.platforms.includes(p);
+                        return (
+                          <button 
+                            key={p} 
+                            type="button"
+                            onClick={() => handleTogglePlatform(p, false)}
+                            className={`p-3 border text-[9px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F] shadow-[0_0_10px_rgba(191,149,63,0.3)]' : 'bg-black/40 text-zinc-500 border-white/10 hover:border-white/30'}`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Listing Value (USDC)</label>

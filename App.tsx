@@ -18,7 +18,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     placementDetail: 'High Alpha Crypto Podcast Spot. We integrate your logo directly into the stream feed with a pinned link in live chat. Audience is 90% male, interested in high-risk DeFi assets.',
     priceSol: 450,
     sold: false,
-    platform: 'YouTube',
+    platforms: ['YouTube', 'X'],
     category: ContentCategory.CRYPTO,
     thumbnailUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?q=80&w=800&auto=format&fit=crop',
     adPosition: 'bottom-left',
@@ -35,7 +35,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     placementDetail: 'Premium Overlay Placement on 4K Stream. Your brand will be featured during competitive play sessions. Guaranteed shoutouts every 30 minutes.',
     priceSol: 1200,
     sold: false,
-    platform: 'Twitch',
+    platforms: ['Twitch', 'YouTube', 'Kick'],
     category: ContentCategory.GAMING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1593340073024-d0f91373ec36?q=80&w=800&auto=format&fit=crop',
     adPosition: 'top-right',
@@ -52,7 +52,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     placementDetail: 'Mid Roll Shoutout and Dynamic Banner. I discuss community news and interact with viewers personally. High trust factor with audience.',
     priceSol: 820,
     sold: false,
-    platform: 'Kick',
+    platforms: ['Kick', 'X'],
     category: ContentCategory.JUST_CHATTING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop',
     adPosition: 'bottom-right',
@@ -82,7 +82,8 @@ const App: React.FC = () => {
           role: UserRole.UNDEFINED,
           revenueEarned: 0,
           timesHired: 0,
-          avgAudienceSize: 0
+          avgAudienceSize: 0,
+          platforms: []
         });
         setCurrentView('profile');
       }
@@ -128,7 +129,7 @@ const App: React.FC = () => {
       placementDetail: data.placementDetail,
       priceSol: data.priceSol,
       sold: false,
-      platform: data.platform,
+      platforms: data.platforms || [],
       category: data.category,
       thumbnailUrl: data.streamPreviewUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
       adPosition: data.adPosition || 'bottom-right',

@@ -54,7 +54,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Simulate upload for UI demonstration
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, avatarUrl: reader.result as string });
@@ -65,7 +64,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const renderInitialSetup = () => (
     <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
-      {/* Decorative gold background element */}
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -109,7 +107,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               [Step 2 of 2] Complete Your Profile
             </div>
             
-            {/* Avatar Upload Circle */}
             <div className="flex flex-col items-center gap-4">
               <div 
                 onClick={handleAvatarClick}
@@ -215,132 +212,223 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 py-8 animate-fadeIn pb-20">
-      <section className="glass p-8 rounded-none border-white/20">
-        <div className="flex flex-col md:flex-row items-start gap-8">
-          <div className="w-20 h-20 bg-black border border-[#BF953F]/30 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_15px_rgba(191,149,63,0.1)]">
+    <div className="max-w-6xl mx-auto space-y-12 py-8 animate-fadeIn pb-20">
+      {/* Expanded Profile Info Section */}
+      <section className="glass p-10 rounded-none border-white/20">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+          <div className="w-32 h-32 bg-black border-2 border-[#BF953F] rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_40px_rgba(191,149,63,0.2)]">
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-2xl font-bold text-[#BF953F] opacity-50">{profile.name.slice(0,2).toUpperCase()}</span>
+              <span className="text-4xl font-black text-[#BF953F] opacity-50">{profile.name.slice(0,2).toUpperCase()}</span>
             )}
           </div>
           
-          <div className="flex-grow w-full">
-            <div className="space-y-5">
-              <div className="flex items-start justify-between border-b border-white/5 pb-5">
+          <div className="flex-grow w-full text-center md:text-left">
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 gap-6">
                 <div>
-                  <h2 className="text-3xl font-black uppercase tracking-tighter text-white">{profile.name}</h2>
-                  <div className="flex items-center gap-3 mt-1">
-                    <p className="mono text-[7.9px] opacity-30 uppercase tracking-widest">{profile.address}</p>
-                    <span className="text-[8px] bg-[#BF953F]/10 text-[#BF953F] px-2 py-0.5 font-black uppercase tracking-widest border border-[#BF953F]/20">{profile.platform}</span>
+                  <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">{profile.name}</h2>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
+                    <p className="mono text-[9px] opacity-40 uppercase tracking-[0.3em] font-bold">{profile.address}</p>
+                    <span className="text-[10px] bg-[#BF953F]/10 text-[#BF953F] px-4 py-1.5 font-black uppercase tracking-widest border border-[#BF953F]/20">{profile.platform}</span>
+                    <span className="text-[10px] bg-white/5 text-zinc-400 px-4 py-1.5 font-black uppercase tracking-widest border border-white/10">{profile.role} STATION</span>
                   </div>
                 </div>
-                <button onClick={() => { setIsEditing(true); setFormData(profile); }} className="text-[7.9px] text-zinc-500 hover:text-[#BF953F] hover:border-[#BF953F] uppercase font-bold tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5 transition-all">Edit Profile</button>
+                <button onClick={() => { setIsEditing(true); setFormData(profile); }} className="text-[10px] text-zinc-500 hover:text-[#BF953F] hover:border-[#BF953F] uppercase font-black tracking-[0.4em] border border-white/10 px-8 py-4 hover:bg-white/5 transition-all">Edit Identity</button>
               </div>
+
               {profile.role === UserRole.CREATOR && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-2">
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Revenue</p><p className="text-xl font-mono font-bold text-white">${profile.revenueEarned?.toLocaleString()}</p></div>
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Hires</p><p className="text-xl font-mono font-bold text-white">{profile.timesHired}</p></div>
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Audience</p><p className="text-xl font-mono font-bold text-white">{profile.avgAudienceSize?.toLocaleString()}</p></div>
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Niche</p><p className="text-xl font-bold text-[#BF953F] uppercase tracking-tighter">{profile.niche}</p></div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 py-4">
+                  <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Revenue (On-Chain)</p><p className="text-3xl font-mono font-bold text-white">${profile.revenueEarned?.toLocaleString()}</p></div>
+                  <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Active Hires</p><p className="text-3xl font-mono font-bold text-white">{profile.timesHired}</p></div>
+                  <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Avg Concurrent</p><p className="text-3xl font-mono font-bold text-white">{profile.avgAudienceSize?.toLocaleString()}</p></div>
+                  <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Target Niche</p><p className="text-3xl font-bold text-[#BF953F] uppercase tracking-tighter">{profile.niche}</p></div>
                 </div>
               )}
-              <div className="pt-2">
-                <p className="text-zinc-400 leading-relaxed text-sm italic max-w-2xl">{profile.bio}</p>
-                {profile.channelLink && (
-                   <a href={profile.channelLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[9px] text-[#BF953F] font-black uppercase tracking-widest mt-4 hover:underline">
-                     Visit Channel <Icons.External className="w-3 h-3" />
-                   </a>
-                )}
+              
+              <div className="pt-4">
+                <p className="text-zinc-400 leading-relaxed text-lg italic max-w-4xl border-l-4 border-[#BF953F]/30 pl-8 py-4 bg-white/5">{profile.bio}</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Creator Portal */}
-        <div className={`glass p-7 rounded-none border-white/10 flex flex-col transition-opacity ${profile.role !== UserRole.CREATOR ? 'opacity-30 pointer-events-none' : ''}`}>
-          <div className="flex items-center justify-between mb-5">
-             <h3 className="text-[0.94rem] font-bold uppercase tracking-tight text-white">Creator Portal</h3>
-             <span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase text-[#BF953F] font-black tracking-widest">Vendor</span>
-          </div>
-          
-          <div className="space-y-5 flex-grow">
-            <p className="text-sm text-gray-400">List your available content inventory. Reach premium sponsors directly. <span className="text-white font-bold">(Max 7 Days in Advance)</span></p>
+      {/* Conditional Portal Rendering - Role Exclusive */}
+      <div className="animate-fadeIn">
+        {profile.role === UserRole.CREATOR ? (
+          <div className="glass p-12 rounded-none border-white/10 flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+               <span className="bg-[#BF953F] text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.5em] shadow-[0_0_20px_rgba(191,149,63,0.3)]">CREATOR COMMAND</span>
+            </div>
             
-            <div className="space-y-4 pt-4 border-t border-white/5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[7.9px] uppercase text-gray-500 font-bold">Platform</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
-                    <option>YouTube</option><option>Twitch</option><option>Facebook</option><option>X</option><option>Kick</option><option>Zora</option><option>PumpFun</option><option>Rumble</option><option>Instagram</option>
-                  </select>
+            <div className="flex flex-col lg:flex-row gap-20">
+              <div className="lg:w-1/3 space-y-10">
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-white">Broadcast Inventory</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">
+                    Deploy your content slots to the marketplace terminal. High visibility for premium sponsors.
+                  </p>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[7.9px] uppercase text-gray-500 font-bold">Category</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.category} onChange={e => setInvData({...invData, category: e.target.value as ContentCategory})}>
-                    {Object.values(ContentCategory).map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[7.9px] uppercase text-gray-500 font-bold">Ad Position</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.adPosition} onChange={e => setInvData({...invData, adPosition: e.target.value as any})}>
-                    <option value="top-left">Top Left</option>
-                    <option value="top-right">Top Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="center">Center</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[7.9px] uppercase text-gray-500 font-bold">Price (USDC)</label>
-                  <input type="number" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.priceSol} onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} required />
+                
+                <div className="p-8 bg-[#BF953F]/5 border-2 border-[#BF953F]/20 space-y-6">
+                  <div className="flex items-center gap-4 text-[#BF953F]">
+                    <div className="w-1.5 h-1.5 bg-[#BF953F] rounded-full animate-pulse"></div>
+                    <p className="text-[12px] font-black uppercase tracking-[0.4em]">Protocol Parameters</p>
+                  </div>
+                  <ul className="text-[12px] text-zinc-400 space-y-4 uppercase font-bold tracking-widest">
+                    <li className="flex justify-between"><span>Max Lookahead</span> <span className="text-white">7 Days</span></li>
+                    <li className="flex justify-between"><span>Settlement</span> <span className="text-white">Instant USDC</span></li>
+                    <li className="flex justify-between"><span>Creator Cut</span> <span className="text-white">90%</span></li>
+                    <li className="flex justify-between"><span>Protocol Fee</span> <span className="text-white">10%</span></li>
+                  </ul>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[7.9px] uppercase text-gray-500 font-bold">Scheduled Content Date</label>
-                <input type="datetime-local" min={minDateString} max={maxDateString} className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.streamTime} onChange={e => setInvData({...invData, streamTime: e.target.value})} required />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[7.9px] uppercase text-gray-500 font-bold">Placement & Strategy Details (Long Form)</label>
-                <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black border border-white/10 p-2 text-sm h-32 resize-none text-white" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
+              <div className="lg:w-2/3 space-y-10">
+                <div className="grid grid-cols-2 gap-10">
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Streaming Host</label>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
+                      <option>YouTube</option><option>Twitch</option><option>Facebook</option><option>X</option><option>Kick</option><option>Zora</option><option>PumpFun</option><option>Rumble</option><option>Instagram</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Content Vertical</label>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.category} onChange={e => setInvData({...invData, category: e.target.value as ContentCategory})}>
+                      {Object.values(ContentCategory).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-10">
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Overlay Position</label>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.adPosition} onChange={e => setInvData({...invData, adPosition: e.target.value as any})}>
+                      <option value="top-left">Top Left</option>
+                      <option value="top-right">Top Right</option>
+                      <option value="bottom-left">Bottom Left</option>
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="center">Center</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Listing Value (USDC)</label>
+                    <input type="number" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={invData.priceSol} onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} required />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Live Event Timestamp</label>
+                  <input type="datetime-local" min={minDateString} max={maxDateString} className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.streamTime} onChange={e => setInvData({...invData, streamTime: e.target.value})} required />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Integration Strategy Detail</label>
+                  <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black/60 border border-white/10 p-6 text-base h-52 resize-none text-white focus:border-[#BF953F] outline-none transition-all leading-relaxed" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
+                </div>
+
+                <div className="pt-10">
+                  <button 
+                    onClick={() => onListInventory(invData)} 
+                    className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] flex items-center justify-center gap-4 hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]"
+                  >
+                    <Icons.Plus /> DEPLOY INVENTORY TO GLOBAL TERMINAL
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        ) : (
+          <div className="glass p-12 rounded-none border-white/10 flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+               <span className="bg-white text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.5em] shadow-[0_0_20px_rgba(255,255,255,0.2)]">SPONSOR HUB</span>
+            </div>
 
-          <button onClick={() => onListInventory(invData)} className="mt-8 bg-white text-black w-full py-3.5 font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-[#BF953F] hover:text-white transition-all disabled:opacity-50" disabled={profile.role !== UserRole.CREATOR}>
-            <Icons.Plus /> List Inventory
-          </button>
-        </div>
+            <div className="flex flex-col lg:flex-row gap-20">
+              <div className="lg:w-1/3 space-y-10">
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-white">Client Identity</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">
+                    Acquire premium ad slots across the creator ecosystem. Instant settlement, high impact branding.
+                  </p>
+                </div>
+                
+                <div className="p-8 border-2 border-white/5 bg-white/5 space-y-6">
+                   <p className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-300">Client Privileges</p>
+                   <ul className="text-[11px] text-zinc-500 space-y-4 uppercase font-bold tracking-[0.3em]">
+                     <li className="flex gap-4 items-center"><div className="w-2 h-2 bg-[#BF953F]"></div> Verified Badge Authorization</li>
+                     <li className="flex gap-4 items-center"><div className="w-2 h-2 bg-[#BF953F]"></div> Direct Production Access</li>
+                     <li className="flex gap-4 items-center"><div className="w-2 h-2 bg-[#BF953F]"></div> Multi-Campaign Dashboard</li>
+                     <li className="flex gap-4 items-center"><div className="w-2 h-2 bg-[#BF953F]"></div> Tax-Compliant Receipts</li>
+                   </ul>
+                </div>
+              </div>
 
-        {/* Sponsor Portal */}
-        <div className={`glass p-7 rounded-none border-white/10 flex flex-col transition-opacity ${profile.role !== UserRole.SPONSOR ? 'opacity-30 pointer-events-none' : ''}`}>
-          <div className="flex items-center justify-between mb-5"><h3 className="text-[0.94rem] font-bold uppercase tracking-tight text-white">Sponsor Portal</h3><span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase text-[#BF953F] font-black tracking-widest">Client</span></div>
-          <div className="space-y-5 flex-grow">
-            <p className="text-sm text-gray-400">Apply to become an authorized sponsor. Once approved, purchase listings instantly.</p>
-            {sponsorApp?.status === SponsorStatus.APPROVED ? (
-              <div className="p-4 bg-white/10 border border-[#BF953F]/40 flex items-center gap-3 h-full"><div className="w-7 h-7 rounded-none bg-[#BF953F] text-white flex items-center justify-center scale-90 shadow-[0_0_10px_rgba(191,149,63,0.5)]"><Icons.Check /></div><div><p className="text-sm font-bold uppercase text-[#F1EBD9]">Account Verified</p><p className="text-xs text-gray-400 mt-0.5">Access to Marketplace unlocked.</p></div></div>
-            ) : sponsorApp?.status === SponsorStatus.PENDING ? (
-              <div className="p-4 bg-white/5 border border-dashed border-white/20 h-full"><p className="text-sm font-bold uppercase text-white">Application Pending</p><p className="text-xs text-gray-400 mt-1">Review takes 24-48 hours. Notifications sent to terminal dashboard.</p></div>
-            ) : (
-              <form className="space-y-4 pt-4 border-t border-white/5" onSubmit={(e) => { e.preventDefault(); onApplySponsor(appData); }}>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Contact Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Company Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Months in Business</label><input type="number" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Logo URL</label><input type="url" placeholder="https://..." className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required /></div>
-                <button type="submit" className="w-full bg-white text-black py-3.5 mt-3 font-bold uppercase text-sm tracking-widest hover:bg-[#BF953F] hover:text-white transition-all">Submit Application</button>
-              </form>
-            )}
+              <div className="lg:w-2/3">
+                {sponsorApp?.status === SponsorStatus.APPROVED ? (
+                  <div className="p-16 bg-white/5 border-2 border-[#BF953F]/40 flex flex-col items-center justify-center text-center space-y-10">
+                    <div className="w-24 h-24 rounded-none bg-[#BF953F] text-white flex items-center justify-center shadow-[0_0_50px_rgba(191,149,63,0.5)]">
+                      <Icons.Check className="w-12 h-12" />
+                    </div>
+                    <div className="space-y-4">
+                      <h2 className="text-4xl font-black uppercase text-[#F1EBD9] tracking-tighter">Account Fully Verified</h2>
+                      <p className="text-sm text-zinc-500 uppercase tracking-[0.4em] font-black">Authorized for Global Content Acquisition</p>
+                    </div>
+                    <div className="w-full h-px bg-white/10"></div>
+                    <button onClick={() => window.location.hash = 'marketplace'} className="bg-white text-black px-16 py-6 font-black text-[12px] uppercase tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-xl">
+                      ENTER MARKETPLACE TERMINAL
+                    </button>
+                  </div>
+                ) : sponsorApp?.status === SponsorStatus.PENDING ? (
+                  <div className="p-16 bg-white/5 border-2 border-dashed border-white/20 text-center space-y-10">
+                    <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                       <div className="absolute inset-0 border-4 border-[#BF953F]/20 rounded-full"></div>
+                       <div className="absolute inset-0 border-t-4 border-[#BF953F] rounded-full animate-spin"></div>
+                       <div className="w-4 h-4 bg-[#BF953F] rounded-full shadow-[0_0_20px_#BF953F]"></div>
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-3xl font-black uppercase text-white tracking-[0.2em]">Verification In Progress</p>
+                      <p className="text-xs text-zinc-500 uppercase tracking-[0.4em] leading-relaxed font-bold">
+                        Compliance Protocol Phase II. <br /> Expected System Approval: 24 Hours.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <form className="space-y-10" onSubmit={(e) => { e.preventDefault(); onApplySponsor(appData); }}>
+                    <div className="grid grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Contact Representative</label>
+                        <input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Legal Business Name</label>
+                        <input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Months Established</label>
+                        <input type="number" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Corporate Logo Source (URL)</label>
+                        <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required />
+                      </div>
+                    </div>
+                    <div className="pt-10">
+                      <button type="submit" className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+                        INITIATE VERIFICATION PROTOCOL
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

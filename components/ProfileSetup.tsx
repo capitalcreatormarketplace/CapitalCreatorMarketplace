@@ -404,17 +404,89 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 )}
                 <input type="file" ref={streamImgRef} className="hidden" accept="image/*" onChange={handleStreamPreviewUpload} />
               </div>
+              
               <div className="grid grid-cols-3 gap-3">
                 {(['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as AdPosition[]).map(pos => (
                   <button key={pos} onClick={() => setInvData({...invData, adPosition: pos})} className={`p-4 border text-[9px] font-black uppercase tracking-widest transition-all ${invData.adPosition === pos ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/10'}`}>{pos.replace('-', ' ')}</button>
                 ))}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase text-zinc-600 font-black tracking-widest">Calendar Selection</label>
+                  <div className="flex gap-2">
+                    {availableDays.map((day, idx) => {
+                      const dayName = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                      const dateNum = day.getDate();
+                      const isSelected = selectedDayIdx === idx;
+                      return (
+                        <button 
+                          key={idx} 
+                          onClick={() => setSelectedDayIdx(idx)}
+                          className={`flex-1 aspect-square flex flex-col items-center justify-center border transition-all ${isSelected ? 'bg-[#BF953F] border-[#BF953F] text-black' : 'bg-black border-white/10 text-zinc-600 hover:border-white/30'}`}
+                        >
+                          <span className="text-[7px] font-black tracking-widest">{dayName}</span>
+                          <span className="text-xl font-black">{dateNum}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase text-zinc-600 font-black tracking-widest">Timing Interface</label>
+                  <div className="flex gap-2 h-[65px]">
+                    <div className="flex-[2] flex gap-1">
+                      <input 
+                        type="text" 
+                        maxLength={2}
+                        className="w-full bg-black border border-white/10 p-4 text-center text-xl font-black text-white focus:border-[#BF953F] outline-none" 
+                        value={selectedTime.hour}
+                        onChange={e => setSelectedTime({...selectedTime, hour: e.target.value})}
+                      />
+                      <div className="flex items-center text-zinc-800 font-black">:</div>
+                      <input 
+                        type="text" 
+                        maxLength={2}
+                        className="w-full bg-black border border-white/10 p-4 text-center text-xl font-black text-white focus:border-[#BF953F] outline-none" 
+                        value={selectedTime.minute}
+                        onChange={e => setSelectedTime({...selectedTime, minute: e.target.value})}
+                      />
+                    </div>
+                    <button 
+                      onClick={() => setSelectedTime({...selectedTime, period: selectedTime.period === 'AM' ? 'PM' : 'AM'})}
+                      className="flex-1 bg-black border border-white/10 text-[10px] font-black uppercase tracking-widest text-white hover:border-[#BF953F]"
+                    >
+                      {selectedTime.period}
+                    </button>
+                    <div className="flex-[2] relative">
+                      <select 
+                        className="w-full h-full bg-black border border-white/10 p-2 text-[8px] font-black uppercase text-white outline-none focus:border-[#BF953F] appearance-none cursor-pointer text-center"
+                        value={selectedTime.timezone}
+                        onChange={e => setSelectedTime({...selectedTime, timezone: e.target.value})}
+                      >
+                        {timezones.map(tz => <option key={tz.label} value={tz.label}>{tz.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-end">
                 <div className="space-y-3">
                   <label className="text-[10px] uppercase text-zinc-600 font-black tracking-widest">USDC Value</label>
-                  <input type="number" className="w-full bg-black border border-white/10 p-5 text-white focus:border-[#BF953F] outline-none font-bold" value={invData.priceSol} onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} required />
+                  <div className="relative h-[75px]">
+                    <input 
+                      type="number" 
+                      className="w-full h-full bg-black border border-white/10 p-5 text-4xl font-black text-white focus:border-[#BF953F] outline-none" 
+                      value={invData.priceSol} 
+                      onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} 
+                      required 
+                    />
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-800 uppercase tracking-widest pointer-events-none">SETTLEMENT</div>
+                  </div>
                 </div>
-                <button onClick={handleListSubmit} disabled={isListing} className="w-full bg-white text-black py-8 font-black uppercase text-[12px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all">
+                <button onClick={handleListSubmit} disabled={isListing} className="w-full h-[75px] bg-white text-black font-black uppercase text-[12px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                   {isListing ? 'AUTHORIZING SOLANA FEE...' : 'DEPLOY INVENTORY'}
                 </button>
               </div>

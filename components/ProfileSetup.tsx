@@ -195,7 +195,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">
                       {verificationStep === 'VERIFIED' ? 'VERIFIED ACCOUNT (LOCKED)' : 'BRAND NAME'}
                     </label>
-                    <div className={`w-full bg-black border p-4 h-[65px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/30 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
+                    <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/30 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
                         <span className="text-xl font-black uppercase tracking-tighter">{formData.name}</span>
                       ) : (
@@ -212,7 +212,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">BROADCAST CLUSTER</label>
-                    <div className="grid grid-cols-3 gap-1.5 h-[65px]">
+                    <div className="grid grid-cols-3 gap-1.5 h-[75px]">
                       {PLATFORM_OPTIONS.slice(0, 6).map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
@@ -256,7 +256,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                           <code className="text-[#1DA1F2] font-black text-xl tracking-[0.1em] group-hover:brightness-125">{verifyCode}</code>
                         </a>
                         <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-3.5 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-200 transition-all">I'VE POSTED</button>
-                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest transition-colors">Cancel</button>
+                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest transition-colors text-center">Cancel</button>
                       </div>
                     )}
 

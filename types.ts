@@ -1,4 +1,3 @@
-
 export enum UserRole {
   UNDEFINED = 'UNDEFINED',
   CREATOR = 'CREATOR',
@@ -39,9 +38,9 @@ export interface InventoryItem {
   creatorName: string;
   streamTime: string;
   placementDetail: string;
-  priceSol: number;
+  priceSol: number; // Treated as USDC in UI
   sold: boolean;
-  platform: 'Twitch' | 'YouTube' | 'Kick' | 'X';
+  platform: 'Twitch' | 'YouTube' | 'Kick' | 'X' | 'Facebook';
   thumbnailUrl: string;
   adPosition: AdPosition;
   // Stats inherited from creator at listing time

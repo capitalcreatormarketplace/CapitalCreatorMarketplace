@@ -12,9 +12,9 @@ export async function optimizeListingDescription(
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Act as a premium ad copywriter. Refine the following livestream ad inventory listing to make it more attractive to corporate sponsors. 
+      contents: `Act as a premium ad copywriter. Refine the following content ad inventory listing to make it more attractive to corporate sponsors. 
       Platform: ${platform}
-      Stream Time: ${streamTime}
+      Timing: ${streamTime}
       Placement Detail: ${rawPlacement}
       
       Keep it professional, high-impact, and brief (max 3 sentences).`,

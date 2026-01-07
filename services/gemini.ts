@@ -1,8 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Standard ESM safety for process.env in browser
-const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+// Fix: Initialize GoogleGenAI according to guidelines using process.env.API_KEY directly
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function optimizeListingDescription(
   streamTime: string,

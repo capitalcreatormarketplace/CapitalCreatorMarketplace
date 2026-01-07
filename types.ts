@@ -1,3 +1,4 @@
+
 export enum UserRole {
   UNDEFINED = 'UNDEFINED',
   CREATOR = 'CREATOR',
@@ -8,6 +9,15 @@ export enum SponsorStatus {
   NONE = 'NONE',
   PENDING = 'PENDING',
   APPROVED = 'APPROVED'
+}
+
+export enum ContentCategory {
+  CRYPTO = 'CRYPTO',
+  GAMING = 'GAMING',
+  JUST_CHATTING = 'JUST CHATTING',
+  FINANCE = 'FINANCE',
+  TECH = 'TECH',
+  LIFESTYLE = 'LIFESTYLE'
 }
 
 export interface UserProfile {
@@ -36,14 +46,15 @@ export interface InventoryItem {
   id: string;
   creatorAddress: string;
   creatorName: string;
-  streamTime: string;
+  streamTime: string; // Display string
+  timestamp: number;   // For filtering logic
   placementDetail: string;
-  priceSol: number; // Treated as USDC in UI
+  priceSol: number; 
   sold: boolean;
-  platform: 'Twitch' | 'YouTube' | 'Kick' | 'X' | 'Facebook';
+  platform: 'Twitch' | 'YouTube' | 'Kick' | 'X' | 'Facebook' | 'Zora' | 'PumpFun' | 'Rumble' | 'Instagram';
+  category: ContentCategory;
   thumbnailUrl: string;
   adPosition: AdPosition;
-  // Stats inherited from creator at listing time
   creatorRevenue?: number;
   creatorHires?: number;
   creatorAvgAudience?: number;

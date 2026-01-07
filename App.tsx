@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import Layout from './components/Layout';
 import Marketplace from './components/Marketplace';
 import ProfileSetup from './components/ProfileSetup';
-import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus } from './types';
+import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory } from './types';
 import { connectWallet, processPayment } from './services/solana';
 import { optimizeListingDescription } from './services/gemini';
 
@@ -12,10 +13,12 @@ const INITIAL_ITEMS: InventoryItem[] = [
     creatorAddress: '8x8j...',
     creatorName: 'CHARTMASTER',
     streamTime: 'Monday July 13th 2pm - 4pm',
-    placementDetail: 'High Alpha Crypto Podcast Spot',
+    timestamp: new Date('2026-07-13T14:00:00').getTime(),
+    placementDetail: 'High Alpha Crypto Podcast Spot. We integrate your logo directly into the stream feed with a pinned link in live chat. Audience is 90% male, interested in high-risk DeFi assets.',
     priceSol: 450,
     sold: false,
     platform: 'YouTube',
+    category: ContentCategory.CRYPTO,
     thumbnailUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?q=80&w=800&auto=format&fit=crop',
     adPosition: 'bottom-left',
     creatorRevenue: 12500,
@@ -25,12 +28,14 @@ const INITIAL_ITEMS: InventoryItem[] = [
   {
     id: 'inv_2',
     creatorAddress: '4y9k...',
-    creatorName: 'THE PAUL SHOW',
+    creatorName: 'NINJA CLONE',
     streamTime: 'Tuesday July 14th 6pm - 8pm',
-    placementDetail: 'Premium Overlay Placement',
+    timestamp: new Date('2026-07-14T18:00:00').getTime(),
+    placementDetail: 'Premium Overlay Placement on 4K Stream. Your brand will be featured during competitive play sessions. Guaranteed shoutouts every 30 minutes.',
     priceSol: 1200,
     sold: false,
-    platform: 'X',
+    platform: 'Twitch',
+    category: ContentCategory.GAMING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1593340073024-d0f91373ec36?q=80&w=800&auto=format&fit=crop',
     adPosition: 'top-right',
     creatorRevenue: 85000,
@@ -40,12 +45,14 @@ const INITIAL_ITEMS: InventoryItem[] = [
   {
     id: 'inv_3',
     creatorAddress: '7u2p...',
-    creatorName: 'DISCOVER CRYPTO',
+    creatorName: 'JUST CHATTY',
     streamTime: 'Wednesday July 15th 1pm - 3pm',
-    placementDetail: 'Mid Roll Shoutout and Banner',
+    timestamp: new Date('2026-07-15T13:00:00').getTime(),
+    placementDetail: 'Mid Roll Shoutout and Dynamic Banner. I discuss community news and interact with viewers personally. High trust factor with audience.',
     priceSol: 820,
     sold: false,
-    platform: 'YouTube',
+    platform: 'Kick',
+    category: ContentCategory.JUST_CHATTING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop',
     adPosition: 'bottom-right',
     creatorRevenue: 34000,
@@ -98,19 +105,29 @@ const App: React.FC = () => {
     if (!profile) return;
     setIsProcessing(true);
     
-    const optimized = await optimizeListingDescription(data.streamTime, data.placementDetail, data.platform);
-    
+    // Format the date for display
+    const dateObj = new Date(data.streamTime);
+    const displayTime = dateObj.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric', 
+      hour: 'numeric', 
+      minute: '2-digit' 
+    });
+
     const newItem: InventoryItem = {
       id: `inv_${Math.random().toString(36).substr(2, 9)}`,
       creatorAddress: profile.address,
       creatorName: profile.name.toUpperCase(),
-      streamTime: data.streamTime,
-      placementDetail: optimized,
+      streamTime: displayTime,
+      timestamp: dateObj.getTime(),
+      placementDetail: data.placementDetail,
       priceSol: data.priceSol,
       sold: false,
       platform: data.platform,
+      category: data.category,
       thumbnailUrl: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
-      adPosition: 'bottom-right',
+      adPosition: data.adPosition || 'bottom-right',
       creatorRevenue: profile.revenueEarned,
       creatorHires: profile.timesHired,
       creatorAvgAudience: profile.avgAudienceSize
@@ -147,103 +164,46 @@ const App: React.FC = () => {
       return (
         <div className="py-10 md:py-14 text-center space-y-9 animate-fadeIn relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-gradient-to-b from-transparent to-white/20"></div>
-          
           <div className="space-y-4 pt-4 max-w-[95vw] mx-auto overflow-hidden px-4">
             <h1 className="flex flex-col text-3xl md:text-5xl lg:text-[3.76rem] font-black uppercase tracking-tighter leading-[0.9] text-center">
-              <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap">
-                CREATOR REWARDS DONE RIGHT
-              </span>
-              <span className="text-zinc-600 transition-colors hover:text-zinc-400 duration-1000 whitespace-nowrap mt-2">
-                MARKETING THAT ACTUALLY WORKS
-              </span>
+              <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap">CREATOR REWARDS DONE RIGHT</span>
+              <span className="text-zinc-600 transition-colors hover:text-zinc-400 duration-1000 whitespace-nowrap mt-2">MARKETING THAT ACTUALLY WORKS</span>
             </h1>
           </div>
-          
           <div className="flex flex-col items-center justify-center pt-2">
-            <button 
-              onClick={() => setCurrentView('marketplace')}
-              className="group relative bg-white text-black px-14 py-5 font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 text-[0.89rem] overflow-hidden border border-white"
-            >
+            <button onClick={() => setCurrentView('marketplace')} className="group relative bg-white text-black px-14 py-5 font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 text-[0.89rem] overflow-hidden border border-white">
               <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-black group-hover:border-white m-1"></div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-black group-hover:border-white m-1"></div>
               MARKETPLACE
             </button>
           </div>
-
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-14 max-w-6xl mx-auto pt-14 group">
-             <div className="text-center transition-all duration-500 w-56">
-               <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">CREATORS EARN</p>
-               <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
-             </div>
-             <div className="text-center transition-all duration-500 w-56">
-               <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">PROJECTS BRAND</p>
-               <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
-             </div>
-             <div className="text-center transition-all duration-500 w-56">
-               <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">BUILD TOGETHER</p>
-               <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
-             </div>
+             {['CREATORS EARN', 'PROJECTS BRAND', 'BUILD TOGETHER'].map(text => (
+                <div key={text} className="text-center transition-all duration-500 w-56">
+                  <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">{text}</p>
+                  <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
+                </div>
+             ))}
           </div>
         </div>
       );
     }
-
-    if (currentView === 'marketplace') {
-      return (
-        <Marketplace 
-          items={inventory} 
-          sponsorStatus={sponsorApp?.status || SponsorStatus.NONE}
-          onPurchase={handlePurchase}
-          loading={isProcessing}
-        />
-      );
-    }
-
-    if (currentView === 'profile' && profile) {
-      return (
-        <ProfileSetup 
-          profile={profile} 
-          sponsorApp={sponsorApp}
-          onSaveProfile={handleSaveProfile}
-          onApplySponsor={handleApplySponsor}
-          onListInventory={handleListInventory}
-        />
-      );
-    }
-
-    if (currentView === 'documents') {
-      return (
-        <div className="py-28 text-center animate-fadeIn max-w-2xl mx-auto space-y-10">
-           <h2 className="text-4xl font-black uppercase tracking-[0.3em]">DOCUMENTS</h2>
-           <div className="w-full h-px bg-white/10"></div>
-           <p className="text-zinc-500 leading-relaxed text-[12.2px] tracking-widest text-justify">
-             CAPITAL CREATOR technical documentation is currently being compiled into a comprehensive whitepaper version 1.0. 
-             <br /><br />
-             PROTOCOL DETAILS:
-             - USDC Settlement Layer Active
-             - Fee Distribution Architecture 10% Split
-             - Solana Program ID Pending Mainnet
-           </p>
-           <div className="pt-8">
-             <button onClick={() => setCurrentView('home')} className="text-[9.4px] uppercase tracking-[0.5em] text-zinc-500 hover:text-white transition-colors border-b border-zinc-800 pb-1">EXIT TO TERMINAL</button>
-           </div>
-        </div>
-      );
-    }
-
+    if (currentView === 'marketplace') return <Marketplace items={inventory} sponsorStatus={sponsorApp?.status || SponsorStatus.NONE} onPurchase={handlePurchase} loading={isProcessing} />;
+    if (currentView === 'profile' && profile) return <ProfileSetup profile={profile} sponsorApp={sponsorApp} onSaveProfile={handleSaveProfile} onApplySponsor={handleApplySponsor} onListInventory={handleListInventory} />;
+    if (currentView === 'documents') return (
+      <div className="py-28 text-center animate-fadeIn max-w-2xl mx-auto space-y-10">
+         <h2 className="text-4xl font-black uppercase tracking-[0.3em]">DOCUMENTS</h2>
+         <div className="w-full h-px bg-white/10"></div>
+         <p className="text-zinc-500 leading-relaxed text-[12.2px] tracking-widest text-justify">
+           CAPITAL CREATOR technical documentation is currently being compiled into a comprehensive whitepaper version 1.0. Protocol settlement via USDC on Solana.
+         </p>
+         <div className="pt-8"><button onClick={() => setCurrentView('home')} className="text-[9.4px] uppercase tracking-[0.5em] text-zinc-500 hover:text-white transition-colors border-b border-zinc-800 pb-1">EXIT TO TERMINAL</button></div>
+      </div>
+    );
     return null;
   };
 
-  return (
-    <Layout 
-      walletAddress={walletAddress} 
-      onConnect={handleConnect} 
-      onNavigate={(v: any) => setCurrentView(v)}
-      currentView={currentView}
-    >
-      {renderView()}
-    </Layout>
-  );
+  return <Layout walletAddress={walletAddress} onConnect={handleConnect} onNavigate={(v: any) => setCurrentView(v)} currentView={currentView}>{renderView()}</Layout>;
 };
 
 export default App;

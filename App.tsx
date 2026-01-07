@@ -6,6 +6,7 @@ import ProfileSetup from './components/ProfileSetup';
 import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory } from './types';
 import { connectWallet, processPayment } from './services/solana';
 import { optimizeListingDescription } from './services/gemini';
+import { Icons } from './constants';
 
 const INITIAL_ITEMS: InventoryItem[] = [
   {
@@ -105,7 +106,6 @@ const App: React.FC = () => {
     if (!profile) return;
     setIsProcessing(true);
     
-    // Format the date for display
     const dateObj = new Date(data.streamTime);
     const displayTime = dateObj.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -162,30 +162,113 @@ const App: React.FC = () => {
   const renderView = () => {
     if (currentView === 'home') {
       return (
-        <div className="py-10 md:py-14 text-center space-y-9 animate-fadeIn relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-gradient-to-b from-transparent to-white/20"></div>
-          <div className="space-y-4 pt-4 max-w-[95vw] mx-auto overflow-hidden px-4">
-            <h1 className="flex flex-col text-3xl md:text-5xl lg:text-[3.76rem] font-black uppercase tracking-tighter leading-[0.9] text-center">
-              <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap">CREATOR REWARDS DONE RIGHT</span>
-              <span className="text-zinc-600 transition-colors hover:text-zinc-400 duration-1000 whitespace-nowrap mt-2">MARKETING THAT ACTUALLY WORKS</span>
-            </h1>
+        <>
+          <div className="py-10 md:py-14 text-center space-y-9 animate-fadeIn relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-gradient-to-b from-transparent to-white/20"></div>
+            <div className="space-y-4 pt-4 max-w-[95vw] mx-auto overflow-hidden px-4">
+              <h1 className="flex flex-col text-3xl md:text-5xl lg:text-[3.76rem] font-black uppercase tracking-tighter leading-[0.9] text-center">
+                <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap">CREATOR REWARDS DONE RIGHT</span>
+                <span className="text-zinc-600 transition-colors hover:text-zinc-400 duration-1000 whitespace-nowrap mt-2">MARKETING THAT ACTUALLY WORKS</span>
+              </h1>
+            </div>
+            <div className="flex flex-col items-center justify-center pt-2">
+              <button onClick={() => setCurrentView('marketplace')} className="group relative bg-white text-black px-14 py-5 font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 text-[0.89rem] overflow-hidden border border-white">
+                <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-black group-hover:border-white m-1"></div>
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-black group-hover:border-white m-1"></div>
+                MARKETPLACE
+              </button>
+            </div>
+            <div className="flex flex-wrap justify-center items-center gap-10 md:gap-14 max-w-6xl mx-auto pt-14 group">
+               {['CREATORS EARN', 'PROJECTS BRAND', 'BUILD TOGETHER'].map(text => (
+                  <div key={text} className="text-center transition-all duration-500 w-56">
+                    <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">{text}</p>
+                    <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
+                  </div>
+               ))}
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center pt-2">
-            <button onClick={() => setCurrentView('marketplace')} className="group relative bg-white text-black px-14 py-5 font-black uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-300 text-[0.89rem] overflow-hidden border border-white">
-              <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-black group-hover:border-white m-1"></div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-black group-hover:border-white m-1"></div>
-              MARKETPLACE
-            </button>
-          </div>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-14 max-w-6xl mx-auto pt-14 group">
-             {['CREATORS EARN', 'PROJECTS BRAND', 'BUILD TOGETHER'].map(text => (
-                <div key={text} className="text-center transition-all duration-500 w-56">
-                  <p className="text-[11.2px] font-black uppercase tracking-[0.45em] text-[#F1EBD9] mb-2 drop-shadow-[0_0_8px_rgba(241,235,217,0.6)]">{text}</p>
-                  <div className="w-full h-[1px] bg-[#F1EBD9]/30 drop-shadow-[0_0_3px_rgba(241,235,217,0.8)]"></div>
+
+          <div className="py-20 md:py-24 space-y-24 animate-fadeIn">
+            <div className="space-y-12">
+              <div className="text-center space-y-2 max-w-2xl mx-auto">
+                <p className="text-zinc-500 text-[10px] font-black tracking-[0.5em] uppercase">The Protocol</p>
+                <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">A Frictionless, On-Chain Workflow</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 text-center md:text-left">
+                <div className="relative border-t border-white/10 pt-8 space-y-4 px-4">
+                  <div className="flex items-center gap-4 justify-center md:justify-start">
+                    <div className="text-white/40"><Icons.Connect /></div>
+                    <h3 className="text-lg font-bold uppercase tracking-wider">Connect & Profile</h3>
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
+                    Your Solana wallet is your passport. No emails, no passwords. Build your creator or sponsor profile in minutes.
+                  </p>
                 </div>
-             ))}
+                <div className="relative border-t border-white/10 pt-8 space-y-4 px-4">
+                  <div className="flex items-center gap-4 justify-center md:justify-start">
+                    <div className="text-white/40"><Icons.Discover /></div>
+                    <h3 className="text-lg font-bold uppercase tracking-wider">List & Discover</h3>
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
+                    Creators list ad inventory in a real-time terminal. Sponsors filter by category and platform to find the perfect fit.
+                  </p>
+                </div>
+                <div className="relative border-t border-white/10 pt-8 space-y-4 px-4">
+                  <div className="flex items-center gap-4 justify-center md:justify-start">
+                    <div className="text-white/40"><Icons.Transact /></div>
+                    <h3 className="text-lg font-bold uppercase tracking-wider">Settle Instantly</h3>
+                  </div>
+                  <p className="text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
+                    Sponsors purchase with a 'Buy It Now' transaction. Payments split instantly on-chain: 90% to creator, 10% to treasury.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-12">
+                <div className="text-center space-y-2 max-w-2xl mx-auto">
+                    <p className="text-zinc-500 text-[10px] font-black tracking-[0.5em] uppercase">Ecosystem Roles</p>
+                    <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">Built For Both Sides Of The Aisle</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="glass p-8 rounded-none border-white/10 space-y-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter text-[#F1EBD9] drop-shadow-[0_0_8px_rgba(241,235,217,0.3)]">For Creators</h3>
+                        <ul className="space-y-4">
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">Direct access to premium sponsors without middlemen.</span>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">You control the price and terms of your ad space.</span>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">Receive 90% of the payment in USDC instantly upon sale.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="glass p-8 rounded-none border-white/10 space-y-6">
+                        <h3 className="text-2xl font-black uppercase tracking-tighter text-[#F1EBD9] drop-shadow-[0_0_8px_rgba(241,235,217,0.3)]">For Sponsors</h3>
+                        <ul className="space-y-4">
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">Discover and sponsor niche creators with targeted reach.</span>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">Make data-driven decisions based on transparent creator metrics.</span>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <Icons.Check className="w-4 h-4 text-[#F1EBD9] shrink-0 mt-1" />
+                                <span className="text-zinc-300 text-sm">Purchase ad inventory with frictionless, on-chain transactions.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
           </div>
-        </div>
+        </>
       );
     }
     if (currentView === 'marketplace') return <Marketplace items={inventory} sponsorStatus={sponsorApp?.status || SponsorStatus.NONE} onPurchase={handlePurchase} loading={isProcessing} />;

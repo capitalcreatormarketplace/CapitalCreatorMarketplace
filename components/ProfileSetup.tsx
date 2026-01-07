@@ -100,7 +100,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       
       setFormData({
         ...formData,
-        name: verifiedHandle, // LOCK IN the verified handle as the account name
+        name: verifiedHandle.toUpperCase(), // LOCK IN the verified handle as the account name
         isXVerified: true,
         xHandle: `@${verifiedHandle}`,
         channelLink: `https://x.com/${verifiedHandle}`
@@ -304,18 +304,18 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Identity Proof (Primary)</label>
                     {formData.isXVerified ? (
-                      <div className="w-full bg-black border-2 border-[#1DA1F2] p-5 pt-7 flex items-center justify-between group transition-all relative overflow-visible h-[95px] shadow-[inset_0_0_20px_rgba(29,161,242,0.1)]">
-                        {/* Verified Badge Header - Matches user screenshot exactly */}
-                        <div className="absolute -top-[1px] -right-[1px] px-6 py-2.5 bg-[#1DA1F2] text-black font-black text-[11px] uppercase tracking-widest z-10 shadow-lg">
+                      <div className="w-full bg-[#080a0c] border-2 border-[#1DA1F2] p-5 pt-7 flex items-center justify-between group transition-all relative overflow-visible h-[100px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
+                        {/* High fidelity "IDENTITY VERIFIED" tab matching screenshot */}
+                        <div className="absolute -top-[1px] -right-[1px] px-8 py-2.5 bg-[#1DA1F2] text-black font-black text-[11px] uppercase tracking-[0.05em] z-10 shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
                           IDENTITY VERIFIED
                         </div>
                         
-                        <div className="flex items-center gap-5">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_15px_rgba(29,161,242,1)]">
-                              <Icons.Check className="w-9 h-9" strokeWidth={5} />
+                        <div className="flex items-center gap-6">
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.8)]">
+                              <Icons.Check className="w-10 h-10" strokeWidth={5} />
                            </div>
-                           <div className="space-y-0.5">
-                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1DA1F2] drop-shadow-[0_0_8px_rgba(29,161,242,0.5)]">Verified X Terminal</p>
+                           <div className="space-y-1">
+                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1DA1F2] opacity-90">Verified X Terminal</p>
                              <p className="text-3xl font-black text-white leading-none tracking-tight">{formData.xHandle}</p>
                            </div>
                         </div>
@@ -333,7 +333,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         type="button"
                         onClick={handleAuthorizeX}
                         disabled={isAuthorizingX}
-                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#1DA1F2] hover:bg-[#1DA1F2]/5 transition-all group overflow-hidden relative min-h-[95px]"
+                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#1DA1F2] hover:bg-[#1DA1F2]/5 transition-all group overflow-hidden relative min-h-[100px]"
                       >
                         {isAuthorizingX ? (
                           <div className="flex items-center gap-3 animate-pulse">
@@ -352,7 +352,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer h-[95px]" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer h-[100px]" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
                       {Object.values(ContentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
                     </select>
                   </div>

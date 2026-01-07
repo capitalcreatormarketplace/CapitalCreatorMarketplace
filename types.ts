@@ -17,7 +17,9 @@ export enum ContentCategory {
   JUST_CHATTING = 'JUST CHATTING',
   FINANCE = 'FINANCE',
   TECH = 'TECH',
-  LIFESTYLE = 'LIFESTYLE'
+  LIFESTYLE = 'LIFESTYLE',
+  MUSIC = 'MUSIC',
+  ENTERTAINMENT = 'ENTERTAINMENT'
 }
 
 export interface UserProfile {
@@ -26,6 +28,12 @@ export interface UserProfile {
   bio: string;
   role: UserRole;
   avatarUrl?: string;
+  // New Brand/Creator Fields
+  platform?: string;
+  channelLink?: string;
+  niche?: string;
+  timezone?: string;
+  schedule?: string;
   // Creator Metrics
   revenueEarned?: number;
   timesHired?: number;

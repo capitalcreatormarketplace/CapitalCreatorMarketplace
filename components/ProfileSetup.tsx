@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory } from '../types';
 import { Icons } from '../constants';
 
@@ -14,6 +14,7 @@ interface ProfileSetupProps {
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [appData, setAppData] = useState<SponsorApplication>(
     sponsorApp || {
@@ -46,59 +47,145 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     setIsEditing(false);
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Simulate upload for UI demonstration
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, avatarUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const renderInitialSetup = () => (
-    <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-black uppercase tracking-tighter">System Initialization</h2>
+    <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
+      {/* Decorative background element */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="text-center space-y-2 relative z-10">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
         <p className="text-zinc-500 font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
       </div>
 
       {formData.role === UserRole.UNDEFINED ? (
-        <div className="space-y-6">
+        <div className="space-y-6 relative z-10">
           <div className="text-center">
             <p className="text-[10px] uppercase text-zinc-400 font-black tracking-[0.4em]">[Step 1 of 2] Role Selection Required</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button 
               onClick={() => setFormData({...formData, role: UserRole.CREATOR})}
-              className="p-8 border-2 border-white/10 hover:border-white/40 hover:bg-white/5 transition-all space-y-3 text-left"
+              className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden"
             >
-              <h3 className="text-xl font-black uppercase tracking-tight text-white">Creator</h3>
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                 <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Creator</h3>
               <p className="text-sm text-zinc-400">List your ad inventory, connect with sponsors, and earn revenue directly.</p>
             </button>
             <button 
               onClick={() => setFormData({...formData, role: UserRole.SPONSOR})}
-              className="p-8 border-2 border-white/10 hover:border-white/40 hover:bg-white/5 transition-all space-y-3 text-left"
+              className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden"
             >
-              <h3 className="text-xl font-black uppercase tracking-tight text-white">Sponsor</h3>
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                 <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Sponsor</h3>
               <p className="text-sm text-zinc-400">Discover creators, purchase ad placements, and grow your brand's reach.</p>
             </button>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleProfileSubmit} className="space-y-8">
-          <div className="text-center">
+        <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
+          <div className="text-center space-y-6">
             <p className="text-[10px] uppercase text-zinc-400 font-black tracking-[0.4em]">[Step 2 of 2] Complete Your Profile</p>
+            
+            {/* Avatar Upload Circle */}
+            <div className="flex flex-col items-center gap-4">
+              <div 
+                onClick={handleAvatarClick}
+                className="relative w-32 h-32 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_30px_rgba(191,149,63,0.15)]"
+              >
+                {formData.avatarUrl ? (
+                  <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                ) : (
+                  <div className="text-center space-y-1">
+                    <div className="text-[#BF953F] flex justify-center"><Icons.Plus className="w-6 h-6" /></div>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-[#BF953F]/70 group-hover:text-[#BF953F]">Upload Logo</span>
+                  </div>
+                )}
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+              </div>
+            </div>
           </div>
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">
-                  {formData.role === UserRole.CREATOR ? 'Creator Name' : 'Sponsor / Project Name'}
-                </label>
-                <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
+                <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
               </div>
                <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Avatar URL (Optional)</label>
-                <input type="url" placeholder="https://..." className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.avatarUrl} onChange={e => setFormData({...formData, avatarUrl: e.target.value})} />
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
+                <select 
+                  className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white appearance-none" 
+                  value={formData.platform || 'YouTube'} 
+                  onChange={e => setFormData({...formData, platform: e.target.value})}
+                >
+                  <option value="YouTube">YouTube</option>
+                  <option value="Twitch">Twitch</option>
+                  <option value="X">X (Twitter)</option>
+                  <option value="Kick">Kick</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Zora">Zora</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-white/5">
-               <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
-              <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/50 border border-white/10 p-4 min-h-[110px] text-sm focus:border-white/40 outline-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Channel Link (Required)</label>
+                <input type="url" placeholder="https://youtube.com/@yourchannel" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
+                <select 
+                   className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white appearance-none" 
+                   value={formData.niche || ContentCategory.CRYPTO} 
+                   onChange={e => setFormData({...formData, niche: e.target.value})}
+                >
+                  {Object.values(ContentCategory).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="flex justify-between items-center pt-5">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Location / Timezone</label>
+                <input type="text" placeholder="e.g. UTC-5 / New York" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.timezone} onChange={e => setFormData({...formData, timezone: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Streaming Schedule</label>
+                <input type="text" placeholder="e.g. Mon-Fri 6PM-10PM EST" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.schedule} onChange={e => setFormData({...formData, schedule: e.target.value})} />
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-4">
+               <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
+              <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/50 border border-white/10 p-4 min-h-[110px] text-sm focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+            </div>
+
+            <div className="flex justify-between items-center pt-8 border-t border-white/5">
               <button 
                 type="button"
                 onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} 
@@ -106,7 +193,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               >
                 Back
               </button>
-              <button type="submit" className="bg-white text-black px-10 py-5 font-black uppercase text-[11px] tracking-widest hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+              <button type="submit" className="bg-white text-black px-12 py-5 font-black uppercase text-[11px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                 Save & Initialize Profile
               </button>
             </div>
@@ -128,11 +215,11 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     <div className="max-w-4xl mx-auto space-y-10 py-8 animate-fadeIn pb-20">
       <section className="glass p-8 rounded-none border-white/20">
         <div className="flex flex-col md:flex-row items-start gap-8">
-          <div className="w-20 h-20 bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-20 h-20 bg-black border border-[#BF953F]/30 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_15px_rgba(191,149,63,0.1)]">
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-2xl font-bold opacity-20">{profile.name.slice(0,2).toUpperCase()}</span>
+              <span className="text-2xl font-bold text-[#BF953F] opacity-50">{profile.name.slice(0,2).toUpperCase()}</span>
             )}
           </div>
           
@@ -140,19 +227,30 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
             <div className="space-y-5">
               <div className="flex items-start justify-between border-b border-white/5 pb-5">
                 <div>
-                  <h2 className="text-3xl font-black uppercase tracking-tighter">{profile.name}</h2>
-                  <p className="mono text-[7.9px] opacity-30 mt-1 uppercase tracking-widest">{profile.address}</p>
+                  <h2 className="text-3xl font-black uppercase tracking-tighter text-white">{profile.name}</h2>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="mono text-[7.9px] opacity-30 uppercase tracking-widest">{profile.address}</p>
+                    <span className="text-[8px] bg-[#BF953F]/10 text-[#BF953F] px-2 py-0.5 font-black uppercase tracking-widest border border-[#BF953F]/20">{profile.platform}</span>
+                  </div>
                 </div>
-                <button onClick={() => { setIsEditing(true); setFormData(profile); }} className="text-[7.9px] text-zinc-500 hover:text-white uppercase font-bold tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5 transition-all">Edit Profile</button>
+                <button onClick={() => { setIsEditing(true); setFormData(profile); }} className="text-[7.9px] text-zinc-500 hover:text-[#BF953F] hover:border-[#BF953F] uppercase font-bold tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5 transition-all">Edit Profile</button>
               </div>
               {profile.role === UserRole.CREATOR && (
-                <div className="grid grid-cols-3 gap-8 py-2">
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Revenue Earned</p><p className="text-xl font-mono font-bold">${profile.revenueEarned?.toLocaleString()}</p></div>
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Times Hired</p><p className="text-xl font-mono font-bold">{profile.timesHired}</p></div>
-                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Avg Audience</p><p className="text-xl font-mono font-bold">{profile.avgAudienceSize?.toLocaleString()}</p></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-2">
+                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Revenue</p><p className="text-xl font-mono font-bold text-white">${profile.revenueEarned?.toLocaleString()}</p></div>
+                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Hires</p><p className="text-xl font-mono font-bold text-white">{profile.timesHired}</p></div>
+                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Audience</p><p className="text-xl font-mono font-bold text-white">{profile.avgAudienceSize?.toLocaleString()}</p></div>
+                  <div className="space-y-1"><p className="text-[7.9px] uppercase text-zinc-500 font-black tracking-widest">Niche</p><p className="text-xl font-bold text-[#BF953F] uppercase tracking-tighter">{profile.niche}</p></div>
                 </div>
               )}
-              <p className="text-zinc-400 leading-relaxed text-sm italic max-w-2xl pt-2">{profile.bio}</p>
+              <div className="pt-2">
+                <p className="text-zinc-400 leading-relaxed text-sm italic max-w-2xl">{profile.bio}</p>
+                {profile.channelLink && (
+                   <a href={profile.channelLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[9px] text-[#BF953F] font-black uppercase tracking-widest mt-4 hover:underline">
+                     Visit Channel <Icons.External className="w-3 h-3" />
+                   </a>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -162,8 +260,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
         {/* Creator Portal */}
         <div className={`glass p-7 rounded-none border-white/10 flex flex-col transition-opacity ${profile.role !== UserRole.CREATOR ? 'opacity-30 pointer-events-none' : ''}`}>
           <div className="flex items-center justify-between mb-5">
-             <h3 className="text-[0.94rem] font-bold uppercase tracking-tight">Creator Portal</h3>
-             <span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase">Vendor</span>
+             <h3 className="text-[0.94rem] font-bold uppercase tracking-tight text-white">Creator Portal</h3>
+             <span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase text-[#BF953F] font-black tracking-widest">Vendor</span>
           </div>
           
           <div className="space-y-5 flex-grow">
@@ -173,13 +271,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[7.9px] uppercase text-gray-500 font-bold">Platform</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
+                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
                     <option>YouTube</option><option>Twitch</option><option>Facebook</option><option>X</option><option>Kick</option><option>Zora</option><option>PumpFun</option><option>Rumble</option><option>Instagram</option>
                   </select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[7.9px] uppercase text-gray-500 font-bold">Category</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm" value={invData.category} onChange={e => setInvData({...invData, category: e.target.value as ContentCategory})}>
+                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.category} onChange={e => setInvData({...invData, category: e.target.value as ContentCategory})}>
                     {Object.values(ContentCategory).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
@@ -190,7 +288,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[7.9px] uppercase text-gray-500 font-bold">Ad Position</label>
-                  <select className="w-full bg-black border border-white/10 p-2 text-sm" value={invData.adPosition} onChange={e => setInvData({...invData, adPosition: e.target.value as any})}>
+                  <select className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.adPosition} onChange={e => setInvData({...invData, adPosition: e.target.value as any})}>
                     <option value="top-left">Top Left</option>
                     <option value="top-right">Top Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -200,42 +298,42 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 </div>
                 <div className="space-y-1">
                   <label className="text-[7.9px] uppercase text-gray-500 font-bold">Price (USDC)</label>
-                  <input type="number" className="w-full bg-black border border-white/10 p-2 text-sm" value={invData.priceSol} onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} required />
+                  <input type="number" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.priceSol} onChange={e => setInvData({...invData, priceSol: Number(e.target.value)})} required />
                 </div>
               </div>
 
               <div className="space-y-1">
                 <label className="text-[7.9px] uppercase text-gray-500 font-bold">Scheduled Content Date</label>
-                <input type="datetime-local" min={minDateString} max={maxDateString} className="w-full bg-black border border-white/10 p-2 text-sm" value={invData.streamTime} onChange={e => setInvData({...invData, streamTime: e.target.value})} required />
+                <input type="datetime-local" min={minDateString} max={maxDateString} className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={invData.streamTime} onChange={e => setInvData({...invData, streamTime: e.target.value})} required />
               </div>
               <div className="space-y-1">
                 <label className="text-[7.9px] uppercase text-gray-500 font-bold">Placement & Strategy Details (Long Form)</label>
-                <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black border border-white/10 p-2 text-sm h-32 resize-none" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
+                <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black border border-white/10 p-2 text-sm h-32 resize-none text-white" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
               </div>
             </div>
           </div>
 
-          <button onClick={() => onListInventory(invData)} className="mt-8 bg-white text-black w-full py-3.5 font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all disabled:opacity-50" disabled={profile.role !== UserRole.CREATOR}>
+          <button onClick={() => onListInventory(invData)} className="mt-8 bg-white text-black w-full py-3.5 font-bold uppercase text-sm flex items-center justify-center gap-2 hover:bg-[#BF953F] hover:text-white transition-all disabled:opacity-50" disabled={profile.role !== UserRole.CREATOR}>
             <Icons.Plus /> List Inventory
           </button>
         </div>
 
         {/* Sponsor Portal */}
         <div className={`glass p-7 rounded-none border-white/10 flex flex-col transition-opacity ${profile.role !== UserRole.SPONSOR ? 'opacity-30 pointer-events-none' : ''}`}>
-          <div className="flex items-center justify-between mb-5"><h3 className="text-[0.94rem] font-bold uppercase tracking-tight">Sponsor Portal</h3><span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase">Client</span></div>
+          <div className="flex items-center justify-between mb-5"><h3 className="text-[0.94rem] font-bold uppercase tracking-tight text-white">Sponsor Portal</h3><span className="bg-white/5 border border-white/10 px-2.5 py-1 text-[7.9px] uppercase text-[#BF953F] font-black tracking-widest">Client</span></div>
           <div className="space-y-5 flex-grow">
             <p className="text-sm text-gray-400">Apply to become an authorized sponsor. Once approved, purchase listings instantly.</p>
             {sponsorApp?.status === SponsorStatus.APPROVED ? (
-              <div className="p-4 bg-white/10 border border-white/20 flex items-center gap-3 h-full"><div className="w-7 h-7 rounded-none bg-white text-black flex items-center justify-center scale-90"><Icons.Check /></div><div><p className="text-sm font-bold uppercase">Account Verified</p><p className="text-xs text-gray-400 mt-0.5">Access to Marketplace unlocked.</p></div></div>
+              <div className="p-4 bg-white/10 border border-[#BF953F]/40 flex items-center gap-3 h-full"><div className="w-7 h-7 rounded-none bg-[#BF953F] text-white flex items-center justify-center scale-90 shadow-[0_0_10px_rgba(191,149,63,0.5)]"><Icons.Check /></div><div><p className="text-sm font-bold uppercase text-[#F1EBD9]">Account Verified</p><p className="text-xs text-gray-400 mt-0.5">Access to Marketplace unlocked.</p></div></div>
             ) : sponsorApp?.status === SponsorStatus.PENDING ? (
-              <div className="p-4 bg-white/5 border border-dashed border-white/20 h-full"><p className="text-sm font-bold uppercase">Application Pending</p><p className="text-xs text-gray-400 mt-1">Review takes 24-48 hours. Notifications sent to CapitalCreatorMarketplace@gmail.com</p></div>
+              <div className="p-4 bg-white/5 border border-dashed border-white/20 h-full"><p className="text-sm font-bold uppercase text-white">Application Pending</p><p className="text-xs text-gray-400 mt-1">Review takes 24-48 hours. Notifications sent to terminal dashboard.</p></div>
             ) : (
               <form className="space-y-4 pt-4 border-t border-white/5" onSubmit={(e) => { e.preventDefault(); onApplySponsor(appData); }}>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Contact Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Company Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Months in Business</label><input type="number" className="w-full bg-black border border-white/10 p-2 text-sm" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required /></div>
-                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Logo URL</label><input type="url" placeholder="https://..." className="w-full bg-black border border-white/10 p-2 text-sm" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required /></div>
-                <button type="submit" className="w-full bg-white text-black py-3.5 mt-3 font-bold uppercase text-sm tracking-widest hover:bg-zinc-200 transition-all">Submit Application</button>
+                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Contact Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required /></div>
+                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Company Name</label><input type="text" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required /></div>
+                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Months in Business</label><input type="number" className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required /></div>
+                <div className="space-y-1"><label className="text-[7.9px] uppercase text-gray-500 font-bold">Logo URL</label><input type="url" placeholder="https://..." className="w-full bg-black border border-white/10 p-2 text-sm text-white" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required /></div>
+                <button type="submit" className="w-full bg-white text-black py-3.5 mt-3 font-bold uppercase text-sm tracking-widest hover:bg-[#BF953F] hover:text-white transition-all">Submit Application</button>
               </form>
             )}
           </div>

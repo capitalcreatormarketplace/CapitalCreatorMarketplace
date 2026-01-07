@@ -88,7 +88,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
         channelLink: `https://x.com/${tempHandle.replace('@', '')}`
       });
       setVerificationStep('VERIFIED');
-    }, 3500);
+    }, 4500); // Slightly longer for "realistic" feel
   };
 
   const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
@@ -195,9 +195,9 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">
                       {verificationStep === 'VERIFIED' ? 'VERIFIED ACCOUNT (LOCKED)' : 'BRAND NAME'}
                     </label>
-                    <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/30 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
+                    <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/60 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
-                        <span className="text-xl font-black uppercase tracking-tighter">{formData.name}</span>
+                        <span className="text-3xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(29,161,242,0.3)]">{formData.name}</span>
                       ) : (
                         <input 
                           type="text" 
@@ -243,56 +243,62 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     )}
 
                     {verificationStep === 'CHALLENGE' && (
-                      <div className="bg-black border border-[#1DA1F2]/20 p-4 space-y-4 animate-fadeIn">
-                        <div className="flex items-center justify-between">
-                           <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-widest">POST TO X:</p>
+                      <div className="bg-black border border-[#1DA1F2]/20 p-5 space-y-6 animate-fadeIn h-[200px] flex flex-col justify-center">
+                        <div className="space-y-1">
+                           <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-[0.2em]">AUTHENTICATION PROTOCOL</p>
+                           <p className="text-[10px] text-white/60 font-medium leading-relaxed">Please post the following verification code to your X timeline. We will scan your feed to confirm ownership.</p>
                         </div>
-                        <a 
-                          href={`https://x.com/intent/tweet?text=Verifying my account for @CapitalCreator0: ${verifyCode}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block bg-[#080a0c] p-3 border border-dashed border-[#1DA1F2]/40 text-center hover:bg-[#1DA1F2]/5 transition-all group"
-                        >
-                          <code className="text-[#1DA1F2] font-black text-xl tracking-[0.1em] group-hover:brightness-125">{verifyCode}</code>
-                        </a>
-                        <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-3.5 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-200 transition-all">I'VE POSTED</button>
-                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest transition-colors text-center">Cancel</button>
+                        <div className="flex gap-3">
+                          <a 
+                            href={`https://x.com/intent/tweet?text=Verifying my account for @CapitalCreator0: ${verifyCode}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-[2] block bg-[#1DA1F2]/10 p-4 border border-dashed border-[#1DA1F2]/40 text-center hover:bg-[#1DA1F2]/20 transition-all group"
+                          >
+                            <code className="text-[#1DA1F2] font-black text-lg tracking-[0.1em] group-hover:brightness-125">{verifyCode}</code>
+                          </a>
+                          <button type="button" onClick={handleVerifyNow} className="flex-1 bg-white text-black font-black uppercase text-[9px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">I'VE POSTED</button>
+                        </div>
+                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="text-[8px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.4em] transition-colors text-center">Abort Verification</button>
                       </div>
                     )}
 
                     {verificationStep === 'SCANNING' && (
-                      <div className="w-full bg-black border border-[#1DA1F2]/10 p-6 flex flex-col items-center justify-center space-y-4 h-[75px]">
-                        <div className="w-1/2 h-0.5 bg-white/5 relative overflow-hidden">
-                           <div className="absolute inset-0 bg-[#1DA1F2] w-1/3 animate-[scanning_1.2s_infinite]"></div>
+                      <div className="w-full bg-black border border-[#1DA1F2]/20 p-6 flex flex-col items-center justify-center space-y-4 h-[75px] relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[#1DA1F2]/5 animate-pulse"></div>
+                        <div className="w-3/4 h-1 bg-white/5 relative overflow-hidden rounded-full">
+                           <div className="absolute inset-0 bg-[#1DA1F2] w-1/4 animate-[scanning_1.5s_infinite] shadow-[0_0_15px_rgba(29,161,242,0.8)]"></div>
                         </div>
-                        <p className="text-[8px] text-[#1DA1F2] font-black uppercase tracking-[0.3em]">Scanning Terminal...</p>
-                        <style>{`@keyframes scanning { 0% { left: -33% } 100% { left: 100% } }`}</style>
+                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] z-10">SEARCHING X TIMELINE FOR {verifyCode}...</p>
+                        <style>{`@keyframes scanning { 0% { left: -25% } 100% { left: 100% } }`}</style>
                       </div>
                     )}
 
                     {verificationStep === 'VERIFIED' && (
-                      <div className="w-full bg-black border border-[#1DA1F2] p-4 pt-8 flex items-center justify-between group relative h-[75px] shadow-[inset_0_0_15px_rgba(29,161,242,0.05)]">
-                        <div className="absolute -top-[1px] -right-[1px] px-5 py-2.5 bg-[#1DA1F2] text-black font-black text-[9.5px] uppercase tracking-[0.05em] z-10 shadow-md">
-                          IDENTITY VERIFIED
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_8px_rgba(29,161,242,0.5)]">
-                              <Icons.Check className="w-9 h-9" strokeWidth={5} />
+                      <div className="w-full bg-black border border-[#1DA1F2] p-4 flex items-center justify-between group relative h-[75px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
+                        {/* Blue Identity Box matching screenshot style */}
+                        <div className="flex items-center gap-5">
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)] animate-pulse">
+                              <Icons.Check className="w-10 h-10" strokeWidth={5} />
                            </div>
                            <div className="space-y-0.5">
-                             <p className="text-[8px] font-black uppercase tracking-[0.1em] text-[#1DA1F2] opacity-70">VERIFIED TERMINAL</p>
+                             <p className="text-[8.5px] font-black uppercase tracking-[0.1em] text-[#1DA1F2]">VERIFIED TERMINAL</p>
                              <p className="text-2xl font-black text-white leading-none tracking-tighter">{formData.xHandle}</p>
                            </div>
                         </div>
-                        
-                        <button 
-                          type="button" 
-                          onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); }} 
-                          className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest mt-5"
-                        >
-                          RESET
-                        </button>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="bg-[#1DA1F2] text-black px-4 py-2 font-black text-[9px] uppercase tracking-widest shadow-lg">
+                            IDENTITY VERIFIED
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); }} 
+                            className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.2em] transition-colors"
+                          >
+                            RESET
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

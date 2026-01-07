@@ -6,9 +6,10 @@ import { TransactionResult } from '../types';
 interface PhantomProvider {
   isPhantom: boolean;
   isConnected: boolean;
+  publicKey: { toString: () => string } | null;
   connect: (options?: { onlyIfTrusted: boolean }) => Promise<{ publicKey: { toString: () => string } }>;
   disconnect: () => Promise<void>;
-  // Additional properties can be added here as needed
+  signMessage: (message: Uint8Array, encoding: string) => Promise<{ signature: Uint8Array }>;
 }
 
 /**
@@ -51,40 +52,54 @@ export async function processPayment(
 }
 
 /**
- * Connects to the user's Phantom wallet.
- * This function will ALWAYS prompt the user for connection approval.
- * @returns The wallet's public key as a string, or null if connection fails.
+ * Connects to the user's Phantom wallet and requires a signature.
+ * This function will ALWAYS force a wallet interaction by requiring a message signature.
+ * @returns The wallet's public key as a string, or null if connection/signing fails.
  */
 export async function connectWallet(): Promise<string | null> {
   const provider = getProvider();
-  if (provider) {
-    try {
-      // By explicitly setting `onlyIfTrusted: false`, we ensure that the wallet
-      // MUST prompt the user for connection, preventing silent auto-connections.
-      // This is a critical security measure to respect user intent.
-      const response = await provider.connect({ onlyIfTrusted: false });
-      const publicKey = response.publicKey.toString();
-      console.log('Phantom Wallet connected:', publicKey);
-      return publicKey;
-    } catch (err) {
-      // This catch block will handle cases where the user rejects the connection prompt.
-      console.error('Wallet connection rejected or failed:', err);
-      return null;
-    }
-  } else {
-    // Guide user to install Phantom if not found
+  if (!provider) {
     alert('Phantom wallet not found! Please install it to continue.');
     window.open('https://phantom.app/', '_blank');
+    return null;
+  }
+
+  try {
+    // 1. Initial Connection
+    // Note: onlyIfTrusted: false is used, but some wallets still auto-resolve if already trusted.
+    const response = await provider.connect({ onlyIfTrusted: false });
+    const publicKey = response.publicKey.toString();
+
+    // 2. FORCED SIGNATURE
+    // To prevent "auto-connecting" without user interaction, we force a Sign Message request.
+    // This will ALWAYS trigger a wallet popup regardless of the "trusted" state.
+    const message = `Sign this to verify your session with Capital Creator.\n\nTimestamp: ${Date.now()}\nWallet: ${publicKey}`;
+    const encodedMessage = new TextEncoder().encode(message);
+    
+    console.log('Requesting signature for verification...');
+    const { signature } = await provider.signMessage(encodedMessage, 'utf8');
+    
+    if (signature) {
+      console.log('Phantom Wallet verified with signature:', publicKey);
+      return publicKey;
+    }
+    
+    return null;
+  } catch (err) {
+    console.error('Wallet connection or signature rejected:', err);
+    // If the user rejected the signature, we should disconnect to be safe
+    if (provider.isConnected) {
+      await provider.disconnect();
+    }
     return null;
   }
 }
 
 /**
- * Disconnects from the user's Phantom wallet.
+ * Disconnects from the user's Phantom wallet and clears session state.
  */
 export async function disconnectWallet(): Promise<void> {
   const provider = getProvider();
-  // Ensure we only attempt to disconnect if a provider exists and is connected.
   if (provider?.isConnected) {
     try {
       await provider.disconnect();

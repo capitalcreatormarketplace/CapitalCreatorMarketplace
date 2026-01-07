@@ -1,5 +1,28 @@
+
 import { TREASURY_WALLET, PLATFORM_FEE_PERCENT } from '../constants';
 import { TransactionResult } from '../types';
+
+// --- Type Definition for the Phantom Wallet Provider ---
+interface PhantomProvider {
+  isPhantom: boolean;
+  connect: (options?: { onlyIfTrusted: boolean }) => Promise<{ publicKey: { toString: () => string } }>;
+  disconnect: () => Promise<void>;
+  // Additional properties can be added here as needed
+}
+
+/**
+ * Retrieves the Phantom wallet provider from the window object.
+ * @returns The provider if it exists and is Phantom, otherwise undefined.
+ */
+const getProvider = (): PhantomProvider | undefined => {
+  if ('solana' in window) {
+    const provider = (window as any).solana;
+    if (provider.isPhantom) {
+      return provider;
+    }
+  }
+  return undefined;
+};
 
 /**
  * Mocks a Solana transaction for the Capital Creator platform.
@@ -11,7 +34,6 @@ export async function processPayment(
 ): Promise<TransactionResult> {
   console.log(`Initializing payment split for ${amountUsdc} USDC`);
   
-  // Real math as requested for USDC (6 decimals on Solana)
   const totalAtomic = amountUsdc * 1_000_000;
   const tenPercent = Math.floor(totalAtomic * PLATFORM_FEE_PERCENT);
   const creatorAmount = totalAtomic - tenPercent;
@@ -19,7 +41,6 @@ export async function processPayment(
   console.log(`Routing ${creatorAmount / 1e6} USDC to Creator: ${creatorAddress}`);
   console.log(`Routing ${tenPercent / 1e6} USDC to Treasury: ${TREASURY_WALLET}`);
 
-  // Simulating on-chain delay
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   return {
@@ -28,8 +49,26 @@ export async function processPayment(
   };
 }
 
+/**
+ * Connects to the user's Phantom wallet.
+ * @returns The wallet's public key as a string, or null if connection fails.
+ */
 export async function connectWallet(): Promise<string | null> {
-  // Mocking for the UI
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return 'CapCrea7orW4lletXXXXXXXXXXXXXXXp2q3r4s5t6u';
+  const provider = getProvider();
+  if (provider) {
+    try {
+      const response = await provider.connect();
+      const publicKey = response.publicKey.toString();
+      console.log('Phantom Wallet connected:', publicKey);
+      return publicKey;
+    } catch (err) {
+      console.error('Wallet connection failed:', err);
+      return null;
+    }
+  } else {
+    // Guide user to install Phantom if not found
+    alert('Phantom wallet not found! Please install it to continue.');
+    window.open('https://phantom.app/', '_blank');
+    return null;
+  }
 }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Icons } from '../constants';
 
@@ -54,14 +55,12 @@ const Layout: React.FC<LayoutProps> = ({ children, walletAddress, onConnect, onN
               </span>
             </button>
           ) : (
-            currentView !== 'home' && (
-              <button 
-                onClick={onConnect}
-                className="bg-white text-black px-5 py-2 text-[8.2px] font-black uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all"
-              >
-                Connect Wallet
-              </button>
-            )
+            <button 
+              onClick={onConnect}
+              className="bg-white text-black px-5 py-2 text-[8.2px] font-black uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all"
+            >
+              Connect Wallet
+            </button>
           )}
         </div>
       </nav>

@@ -73,7 +73,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
     <div className="space-y-10 animate-fadeIn pb-20">
       <div className="text-center py-12 space-y-4">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-none">
-          CONTENT SPONSORSHIP <br className="hidden md:block" /> MARKETPLACE
+          CONTENT SPONSORSHIP <br className="hidden md:block" /> 
+          <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(212,175,55,0.3)]">MARKETPLACE</span>
         </h1>
         <p className="text-zinc-500 font-bold uppercase tracking-[0.5em] text-[10px] md:text-xs">
           BUY CONTENT AD PLACEMENTS

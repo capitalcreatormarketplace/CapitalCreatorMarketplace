@@ -29,17 +29,14 @@ const Layout: React.FC<LayoutProps> = ({ children, walletAddress, onConnect, onD
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      <nav className="sticky top-0 z-50 glass border-b border-white/5 px-7 py-5 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 glass border-b border-white/5 px-7 py-4 flex items-center justify-between">
         <div 
-          className="flex items-center gap-4 cursor-pointer group"
+          className="flex items-center cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
-          <div className="transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]">
-            <Icons.Logo className="h-11 w-auto" />
+          <div className="transition-all duration-300 group-hover:brightness-125">
+            <Icons.Logo className="text-[1.1rem]" />
           </div>
-          <span className="text-base font-black uppercase tracking-tighter hidden sm:block">
-            CAPITAL CREATOR
-          </span>
         </div>
 
         <div className="flex items-center gap-7">

@@ -10,26 +10,11 @@ export const TREASURY_WALLET = '3iWog8QKweF6iDNj6ujP9bDavvQ7Ra1f1wrGcaH9dWqC';
 export const PLATFORM_FEE_PERCENT = 0.10;
 
 export const Icons = {
-  Logo: ({ className = 'w-10 h-10' }: IconProps) => (
-    <img 
-      src="logo.png" 
-      alt="Capital Creator Logo" 
-      className={`${className} object-contain`}
-      onError={(e) => {
-        // Fallback styling if logo.png is missing in the local directory
-        const target = e.target as HTMLImageElement;
-        target.style.display = 'none';
-        const parent = target.parentElement;
-        if (parent && !parent.querySelector('.logo-fallback')) {
-          const fallback = document.createElement('div');
-          fallback.className = 'logo-fallback flex items-center justify-center font-black text-white bg-white/10 rounded-full border border-white/20';
-          fallback.style.width = '44px';
-          fallback.style.height = '44px';
-          fallback.innerText = '$';
-          parent.appendChild(fallback);
-        }
-      }}
-    />
+  Logo: ({ className = '' }: IconProps) => (
+    <div className={`flex items-center select-none font-black uppercase tracking-tighter ${className}`}>
+      <span className="text-white">CAPITAL</span>
+      <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(212,175,55,0.4)] ml-1.5">CREATOR</span>
+    </div>
   ),
   Wallet: ({ className = 'w-5 h-5' }: IconProps) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><path d="M16 11h.01"/><path d="M22 10V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2"/><path d="M2 14v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2"/></svg>

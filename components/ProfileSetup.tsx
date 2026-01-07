@@ -89,11 +89,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   };
 
   const handleAuthorizeX = () => {
-    if (!formData.name) {
-      alert("Please enter a brand name first to initiate X handshake.");
-      return;
-    }
-    
     setIsAuthorizingX(true);
     setShowXOverlay(true);
     
@@ -101,13 +96,17 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=CAPITAL_CREATOR&redirect_uri=${window.location.origin}&scope=users.read%20tweet.read&state=state`;
     window.open(authUrl, 'x_authorize', 'width=600,height=700');
 
-    // Simulate the OAuth callback/return logic
+    // Simulate the OAuth callback/return logic where the NAME is returned from X
     setTimeout(() => {
+      // In a real OAuth flow, 'Verified User' would be the actual name from the X API response
+      const verifiedName = formData.name || "VERIFIED CREATOR"; 
+      
       setFormData({
         ...formData,
+        name: verifiedName, // LOCK IN the name from the session response
         isXVerified: true,
-        xHandle: `@${formData.name.replace(/\s+/g, '').toLowerCase()}`,
-        channelLink: `https://x.com/${formData.name.replace(/\s+/g, '').toLowerCase()}`
+        xHandle: `@${verifiedName.replace(/\s+/g, '').toLowerCase()}`,
+        channelLink: `https://x.com/${verifiedName.replace(/\s+/g, '').toLowerCase()}`
       });
       setIsAuthorizingX(false);
       setShowXOverlay(false);
@@ -212,8 +211,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                  <Icons.X className="w-8 h-8 text-white" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-black uppercase tracking-widest text-white">Handshake in Progress</h3>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] leading-relaxed">Please complete the authorization in the X popup window...</p>
+                <h3 className="text-xl font-black uppercase tracking-widest text-white">X Handshake Active</h3>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] leading-relaxed">Identity verification in progress... <br/> Fetching authorized profile metadata.</p>
               </div>
             </div>
           </div>
@@ -273,8 +272,18 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <div className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
-                    <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">
+                      {formData.isXVerified ? 'Verified Brand Name (Locked)' : 'Brand Name'}
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. ChartMaster" 
+                      disabled={formData.isXVerified}
+                      className={`w-full bg-black/60 border p-5 text-base font-bold outline-none text-white transition-all ${formData.isXVerified ? 'border-[#1DA1F2]/40 opacity-70 cursor-not-allowed' : 'border-white/10 focus:border-[#BF953F]'}`} 
+                      value={formData.name} 
+                      onChange={e => setFormData({...formData, name: e.target.value})} 
+                      required 
+                    />
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Broadcast Cluster (Select Multiple)</label>
@@ -308,7 +317,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                              <p className="text-base font-black text-white">{formData.xHandle}</p>
                            </div>
                         </div>
-                        <button type="button" onClick={() => setFormData({...formData, isXVerified: false, xHandle: ''})} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest">Reset</button>
+                        <button type="button" onClick={() => setFormData({...formData, isXVerified: false, xHandle: '', name: ''})} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest">Reset</button>
                       </div>
                     ) : (
                       <button 

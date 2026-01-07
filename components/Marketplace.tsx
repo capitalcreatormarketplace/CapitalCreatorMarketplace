@@ -10,16 +10,20 @@ interface MarketplaceProps {
 }
 
 const AdBadge: React.FC<{ position: AdPosition; isPreview?: boolean }> = ({ position, isPreview }) => {
-  const positionClasses = {
-    'top-left': 'top-4 left-4',
-    'top-right': 'top-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'center': 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+  const getPositionClasses = (pos: AdPosition) => {
+    switch (pos) {
+      case 'top-left': return 'top-4 left-4';
+      case 'top-center': return 'top-4 left-1/2 -translate-x-1/2';
+      case 'top-right': return 'top-4 right-4';
+      case 'bottom-left': return 'bottom-4 left-4';
+      case 'bottom-center': return 'bottom-4 left-1/2 -translate-x-1/2';
+      case 'bottom-right': return 'bottom-4 right-4';
+      default: return 'bottom-4 right-4';
+    }
   };
 
   return (
-    <div className={`absolute ${positionClasses[position]} z-10 bg-white/30 backdrop-blur-md border border-white/60 px-2.5 py-1 rounded text-white font-black ${isPreview ? 'text-sm px-4 py-2 border-2' : 'text-xs'} tracking-tighter drop-shadow-xl uppercase animate-pulse`}>
+    <div className={`absolute ${getPositionClasses(position)} z-10 bg-white/30 backdrop-blur-md border border-white/60 px-2.5 py-1 rounded text-white font-black ${isPreview ? 'text-sm px-4 py-2 border-2' : 'text-xs'} tracking-tighter drop-shadow-xl uppercase animate-pulse`}>
       {isPreview ? 'YOUR LOGO HERE' : 'AD'}
     </div>
   );

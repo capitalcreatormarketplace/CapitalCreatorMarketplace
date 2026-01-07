@@ -1,7 +1,8 @@
 
 import React, { useState, useRef } from 'react';
-import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory } from '../types';
+import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 import { Icons } from '../constants';
+import { processPayment } from '../services/solana';
 
 interface ProfileSetupProps {
   profile: UserProfile;
@@ -14,7 +15,9 @@ interface ProfileSetupProps {
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
+  const [isListing, setIsListing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamImgRef = useRef<HTMLInputElement>(null);
   
   const [appData, setAppData] = useState<SponsorApplication>(
     sponsorApp || {
@@ -32,7 +35,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     priceSol: 100, // USDC Default
     platform: 'YouTube' as const,
     category: ContentCategory.CRYPTO,
-    adPosition: 'bottom-right' as const
+    adPosition: 'bottom-right' as AdPosition,
+    streamPreviewUrl: ''
   });
 
   const now = new Date();
@@ -59,6 +63,42 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
         setFormData({ ...formData, avatarUrl: reader.result as string });
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStreamPreviewUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setInvData({ ...invData, streamPreviewUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleListSubmit = async () => {
+    if (!invData.streamPreviewUrl) {
+      alert("Please upload a stream preview image first.");
+      return;
+    }
+    if (!invData.streamTime) {
+      alert("Please select a valid stream date within the next 7 days.");
+      return;
+    }
+
+    setIsListing(true);
+    try {
+      // Spam prevention: $0.01 USDC Fee
+      const result = await processPayment(profile.address, 0.01);
+      if (result.success) {
+        onListInventory(invData);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Spam prevention payment failed. Check your wallet.");
+    } finally {
+      setIsListing(false);
     }
   };
 
@@ -211,9 +251,20 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     );
   }
 
+  const getPositionClasses = (pos: AdPosition) => {
+    switch (pos) {
+      case 'top-left': return 'top-4 left-4';
+      case 'top-center': return 'top-4 left-1/2 -translate-x-1/2';
+      case 'top-right': return 'top-4 right-4';
+      case 'bottom-left': return 'bottom-4 left-4';
+      case 'bottom-center': return 'bottom-4 left-1/2 -translate-x-1/2';
+      case 'bottom-right': return 'bottom-4 right-4';
+      default: return '';
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-12 py-8 animate-fadeIn pb-20">
-      {/* Expanded Profile Info Section */}
       <section className="glass p-10 rounded-none border-white/20">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
           <div className="w-32 h-32 bg-black border-2 border-[#BF953F] rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_40px_rgba(191,149,63,0.2)]">
@@ -223,7 +274,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <span className="text-4xl font-black text-[#BF953F] opacity-50">{profile.name.slice(0,2).toUpperCase()}</span>
             )}
           </div>
-          
           <div className="flex-grow w-full text-center md:text-left">
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 gap-6">
@@ -237,7 +287,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 </div>
                 <button onClick={() => { setIsEditing(true); setFormData(profile); }} className="text-[10px] text-zinc-500 hover:text-[#BF953F] hover:border-[#BF953F] uppercase font-black tracking-[0.4em] border border-white/10 px-8 py-4 hover:bg-white/5 transition-all">Edit Identity</button>
               </div>
-
               {profile.role === UserRole.CREATOR && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 py-4">
                   <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Revenue (On-Chain)</p><p className="text-3xl font-mono font-bold text-white">${profile.revenueEarned?.toLocaleString()}</p></div>
@@ -246,7 +295,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="space-y-2"><p className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">Target Niche</p><p className="text-3xl font-bold text-[#BF953F] uppercase tracking-tighter">{profile.niche}</p></div>
                 </div>
               )}
-              
               <div className="pt-4">
                 <p className="text-zinc-400 leading-relaxed text-lg italic max-w-4xl border-l-4 border-[#BF953F]/30 pl-8 py-4 bg-white/5">{profile.bio}</p>
               </div>
@@ -255,7 +303,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
         </div>
       </section>
 
-      {/* Conditional Portal Rendering - Role Exclusive */}
       <div className="animate-fadeIn">
         {profile.role === UserRole.CREATOR ? (
           <div className="glass p-12 rounded-none border-white/10 flex flex-col relative overflow-hidden">
@@ -279,14 +326,58 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <ul className="text-[12px] text-zinc-400 space-y-4 uppercase font-bold tracking-widest">
                     <li className="flex justify-between"><span>Max Lookahead</span> <span className="text-white">7 Days</span></li>
-                    <li className="flex justify-between"><span>Settlement</span> <span className="text-white">Instant USDC</span></li>
+                    <li className="flex justify-between"><span>Listing Fee</span> <span className="text-[#BF953F]">$0.01 USDC</span></li>
                     <li className="flex justify-between"><span>Creator Cut</span> <span className="text-white">90%</span></li>
                     <li className="flex justify-between"><span>Protocol Fee</span> <span className="text-white">10%</span></li>
                   </ul>
+                  <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest italic">* $0.01 anti-spam verification fee applied to all broadcasts.</p>
                 </div>
               </div>
 
               <div className="lg:w-2/3 space-y-10">
+                {/* 1. Stream Preview Upload */}
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">1. Upload Stream Environment Preview</label>
+                  <div 
+                    onClick={() => streamImgRef.current?.click()}
+                    className="relative aspect-video w-full bg-black border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer group hover:border-[#BF953F]/40 transition-all overflow-hidden"
+                  >
+                    {invData.streamPreviewUrl ? (
+                      <>
+                        <img src={invData.streamPreviewUrl} className="w-full h-full object-cover" alt="Stream Preview" />
+                        <div className={`absolute ${getPositionClasses(invData.adPosition)} z-10 bg-white/40 backdrop-blur-md border border-white px-3 py-1.5 text-[10px] text-black font-black uppercase tracking-tighter shadow-2xl animate-pulse`}>
+                          YOUR LOGO HERE
+                        </div>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <span className="text-white font-black uppercase tracking-widest text-xs">Change Preview</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center space-y-2 opacity-50 group-hover:opacity-100">
+                        <Icons.Plus className="w-10 h-10 mx-auto text-zinc-500" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Click to upload what your stream looks like</p>
+                      </div>
+                    )}
+                    <input type="file" ref={streamImgRef} className="hidden" accept="image/*" onChange={handleStreamPreviewUpload} />
+                  </div>
+                </div>
+
+                {/* 2. Position Selector */}
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">2. Select Primary Ad Coordinate</label>
+                  <div className="grid grid-cols-3 gap-4">
+                    {(['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as AdPosition[]).map(pos => (
+                      <button 
+                        key={pos}
+                        onClick={() => setInvData({...invData, adPosition: pos})}
+                        className={`p-4 border text-[9px] font-black uppercase tracking-widest transition-all ${invData.adPosition === pos ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-white/5 text-zinc-500 border-white/5 hover:border-white/20'}`}
+                      >
+                        {pos.replace('-', ' ')}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-10">
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Streaming Host</label>
@@ -306,14 +397,16 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
                 <div className="grid grid-cols-2 gap-10">
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Overlay Position</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.adPosition} onChange={e => setInvData({...invData, adPosition: e.target.value as any})}>
-                      <option value="top-left">Top Left</option>
-                      <option value="top-right">Top Right</option>
-                      <option value="bottom-left">Bottom Left</option>
-                      <option value="bottom-right">Bottom Right</option>
-                      <option value="center">Center</option>
-                    </select>
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Live Event Timestamp (Next 7 Days Only)</label>
+                    <input 
+                      type="datetime-local" 
+                      min={minDateString} 
+                      max={maxDateString} 
+                      className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold appearance-none" 
+                      value={invData.streamTime} 
+                      onChange={e => setInvData({...invData, streamTime: e.target.value})} 
+                      required 
+                    />
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Listing Value (USDC)</label>
@@ -322,20 +415,20 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Live Event Timestamp</label>
-                  <input type="datetime-local" min={minDateString} max={maxDateString} className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.streamTime} onChange={e => setInvData({...invData, streamTime: e.target.value})} required />
-                </div>
-                <div className="space-y-3">
                   <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Integration Strategy Detail</label>
                   <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black/60 border border-white/10 p-6 text-base h-52 resize-none text-white focus:border-[#BF953F] outline-none transition-all leading-relaxed" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
                 </div>
 
                 <div className="pt-10">
                   <button 
-                    onClick={() => onListInventory(invData)} 
-                    className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] flex items-center justify-center gap-4 hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]"
+                    onClick={handleListSubmit}
+                    disabled={isListing}
+                    className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] flex flex-col items-center justify-center gap-1 hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)] disabled:opacity-50"
                   >
-                    <Icons.Plus /> DEPLOY INVENTORY TO GLOBAL TERMINAL
+                    <div className="flex items-center gap-4">
+                      <Icons.Plus /> {isListing ? 'AUTHORIZING SOLANA FEE...' : 'DEPLOY INVENTORY TO GLOBAL TERMINAL'}
+                    </div>
+                    {!isListing && <span className="text-[9px] opacity-70">PAY $0.01 USDC SPAM VERIFICATION FEE</span>}
                   </button>
                 </div>
               </div>
@@ -346,7 +439,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
             <div className="absolute top-0 right-0 p-4">
                <span className="bg-white text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.5em] shadow-[0_0_20px_rgba(255,255,255,0.2)]">SPONSOR HUB</span>
             </div>
-
             <div className="flex flex-col lg:flex-row gap-20">
               <div className="lg:w-1/3 space-y-10">
                 <div className="space-y-4">
@@ -355,7 +447,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     Acquire premium ad slots across the creator ecosystem. Instant settlement, high impact branding.
                   </p>
                 </div>
-                
                 <div className="p-8 border-2 border-white/5 bg-white/5 space-y-6">
                    <p className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-300">Client Privileges</p>
                    <ul className="text-[11px] text-zinc-500 space-y-4 uppercase font-bold tracking-[0.3em]">
@@ -366,7 +457,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                    </ul>
                 </div>
               </div>
-
               <div className="lg:w-2/3">
                 {sponsorApp?.status === SponsorStatus.APPROVED ? (
                   <div className="p-16 bg-white/5 border-2 border-[#BF953F]/40 flex flex-col items-center justify-center text-center space-y-10">

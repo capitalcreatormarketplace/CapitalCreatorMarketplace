@@ -5,7 +5,7 @@ import Marketplace from './components/Marketplace';
 import ProfileSetup from './components/ProfileSetup';
 import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory } from './types';
 import { connectWallet, processPayment, disconnectWallet } from './services/solana';
-import { optimizeListingDescription } from './services/gemini';
+// Fix: Import Icons from constants to provide access to navigation and step icons
 import { Icons } from './constants';
 
 const INITIAL_ITEMS: InventoryItem[] = [
@@ -109,7 +109,6 @@ const App: React.FC = () => {
 
   const handleListInventory = async (data: any) => {
     if (!profile) return;
-    setIsProcessing(true);
     
     const dateObj = new Date(data.streamTime);
     const displayTime = dateObj.toLocaleDateString('en-US', { 
@@ -131,7 +130,7 @@ const App: React.FC = () => {
       sold: false,
       platform: data.platform,
       category: data.category,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
+      thumbnailUrl: data.streamPreviewUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
       adPosition: data.adPosition || 'bottom-right',
       creatorRevenue: profile.revenueEarned,
       creatorHires: profile.timesHired,
@@ -140,7 +139,6 @@ const App: React.FC = () => {
 
     setInventory([newItem, ...inventory]);
     setProfile({ ...profile, role: UserRole.CREATOR });
-    setIsProcessing(false);
     setCurrentView('marketplace');
   };
 
@@ -196,10 +194,6 @@ const App: React.FC = () => {
           <div className="py-24 md:py-32 text-center space-y-20 animate-fadeIn relative overflow-visible">
             <div className="space-y-4 max-w-[100vw] mx-auto px-4 overflow-hidden">
               <h1 className="flex flex-col uppercase text-center font-['Bebas_Neue'] tracking-[-0.02em] leading-[0.95]">
-                {/* 
-                  Further refined hero text size: 
-                  Scaled down by an additional 2% from clamp(2.2rem, 7.5vw, 7.5rem) to clamp(2.15rem, 7.35vw, 7.35rem).
-                */}
                 <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.15rem,7.35vw,7.35rem)]">
                   CREATOR REWARDS DONE RIGHT
                 </span>

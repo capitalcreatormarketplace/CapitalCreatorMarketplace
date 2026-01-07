@@ -48,7 +48,7 @@ export interface SponsorApplication {
   status: SponsorStatus;
 }
 
-export type AdPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+export type AdPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 
 export interface InventoryItem {
   id: string;

@@ -12,7 +12,11 @@ interface ProfileSetupProps {
   onListInventory: (item: any) => void;
 }
 
-const PLATFORM_OPTIONS = ['YouTube', 'Twitch', 'Facebook', 'X', 'Kick', 'Zora', 'PumpFun', 'Rumble', 'Instagram', 'TikTok', 'Discord', 'Other'];
+const PLATFORM_OPTIONS = [
+  'YouTube', 'Twitch', 'Facebook', 'X', 
+  'Kick', 'Zora', 'PumpFun', 'Rumble', 
+  'Instagram', 'TikTok', 'Discord', 'Other'
+];
 
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   const [isEditing, setIsEditing] = useState(!profile.name);
@@ -88,9 +92,10 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const extractHandleFromUrl = (url: string): string | null => {
     try {
-      const u = new URL(url.startsWith('http') ? url : `https://${url}`);
-      const pathParts = u.pathname.split('/').filter(p => p);
-      if (pathParts.length > 0) return pathParts[0].toLowerCase();
+      // Standardizes input and checks various X/Twitter URL formats
+      const regex = /(?:twitter\.com|x\.com)\/([^\/]+)/i;
+      const match = url.match(regex);
+      if (match && match[1]) return match[1].toLowerCase();
     } catch (e) {
       return null;
     }
@@ -101,12 +106,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     const urlHandle = extractHandleFromUrl(tweetUrl);
     
     if (!urlHandle) {
-      alert("Verification Failed: Invalid URL format.");
+      alert("Verification Failed: Invalid URL format. Please provide a direct link to the post.");
       return;
     }
 
     if (urlHandle !== tempHandle) {
-      alert(`Verification Failed: The post belongs to @${urlHandle}, but you are trying to verify @${tempHandle}. Identity mismatch detected.`);
+      alert(`Verification Error: This post belongs to @${urlHandle}. You entered @${tempHandle}. Identity handles must match.`);
       return;
     }
     
@@ -122,6 +127,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       });
       setVerificationStep('VERIFIED');
     }, 4500);
+  };
+
+  const handleTogglePlatform = (p: string) => {
+    const current = formData.platforms || [];
+    const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
+    setFormData({...formData, platforms: updated});
   };
 
   const handleAvatarClick = () => fileInputRef.current?.click();
@@ -218,7 +229,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     </label>
                     <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/60 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
-                        <span className="text-4xl font-black uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(29,161,242,0.4)] truncate">{formData.name}</span>
+                        <span className="text-2xl md:text-3xl font-black uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(29,161,242,0.4)] truncate overflow-hidden whitespace-nowrap">{formData.name}</span>
                       ) : (
                         <input 
                           type="text" 
@@ -233,11 +244,11 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">BROADCAST CLUSTER</label>
-                    <div className="grid grid-cols-3 gap-1.5 h-[75px]">
-                      {PLATFORM_OPTIONS.slice(0, 6).map(p => {
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {PLATFORM_OPTIONS.map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
-                          <button key={p} type="button" onClick={() => { if(verificationStep !== 'VERIFIED') { const current = formData.platforms || []; const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p]; setFormData({...formData, platforms: updated}); } }} className={`p-2 border text-[8px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
+                          <button key={p} type="button" onClick={() => handleTogglePlatform(p)} className={`p-1.5 border text-[7.5px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-white text-black border-white shadow-[0_0_8px_rgba(255,255,255,0.2)]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
                             {p}
                           </button>
                         );
@@ -259,7 +270,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                           value={tempHandle}
                           onChange={e => setTempHandle(e.target.value)}
                         />
-                        <button type="button" onClick={startVerification} className="bg-[#1DA1F2] text-black px-4 font-black uppercase text-[9px] tracking-widest">Verify</button>
+                        <button type="button" onClick={startVerification} className="bg-[#1DA1F2] text-black px-4 font-black uppercase text-[9px] tracking-widest hover:brightness-110 transition-all">Verify</button>
                       </div>
                     )}
 
@@ -267,7 +278,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       <div className="bg-black border border-[#1DA1F2]/20 p-5 space-y-4 animate-fadeIn">
                         <div className="space-y-1">
                            <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-[0.2em]">AUTHENTICATION PROTOCOL</p>
-                           <p className="text-[9px] text-white/40 leading-relaxed">Step 1: Post the code. Step 2: Paste the URL below. Handle MUST match.</p>
+                           <p className="text-[9px] text-white/40 leading-relaxed">1. Post code to X. 2. Paste URL below. Handle must match your entered ID.</p>
                         </div>
                         <div className="space-y-4">
                           <a 
@@ -282,12 +293,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                           <div className="space-y-2">
                              <input 
                                type="url" 
-                               placeholder="Paste Post URL (x.com/yourname/status/...)"
+                               placeholder="Post URL (x.com/handle/status/...)"
                                className="w-full bg-black border border-white/10 p-3 text-[10px] text-white outline-none focus:border-[#1DA1F2] placeholder:text-zinc-800"
                                value={tweetUrl}
                                onChange={e => setTweetUrl(e.target.value)}
                              />
-                             <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-4 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">VALIDATE IDENTITY</button>
+                             <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-4 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">VALIDATE POST</button>
                           </div>
                         </div>
                         <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[8px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.4em] transition-colors text-center">Abort Verification</button>
@@ -307,14 +318,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
                     {verificationStep === 'VERIFIED' && (
                       <div className="w-full bg-black border border-[#1DA1F2]/60 p-4 flex items-center justify-between group relative h-[75px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
-                        {/* Blue Identity Box matching screenshot style */}
                         <div className="flex items-center gap-5">
                            <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)]">
                               <Icons.Check className="w-10 h-10" strokeWidth={5} />
                            </div>
                            <div className="space-y-0.5">
                              <p className="text-[8.5px] font-black uppercase tracking-[0.1em] text-[#1DA1F2]">VERIFIED TERMINAL</p>
-                             <p className="text-2xl font-black text-white leading-none tracking-tighter">{formData.xHandle}</p>
+                             <p className="text-xl md:text-2xl font-black text-white leading-none tracking-tighter truncate max-w-[150px]">{formData.xHandle}</p>
                            </div>
                         </div>
 
@@ -338,9 +348,9 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">CATEGORY / NICHE</label>
                     <div className="relative h-[75px]">
                       <select 
-                        className="w-full h-full bg-black border border-white/5 p-4 text-3xl font-black uppercase tracking-tighter focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer text-center" 
+                        className="w-full h-full bg-black border border-white/5 p-4 text-xl md:text-2xl font-black uppercase tracking-tighter focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer text-center" 
                         value={formData.niche || ContentCategory.CRYPTO} 
-                        onChange={e => setFormData({...formData, niche: e.target.value})}
+                        onChange={e => setFormData({...formData, niche: e.target.value as ContentCategory})}
                       >
                         {Object.values(ContentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
                       </select>

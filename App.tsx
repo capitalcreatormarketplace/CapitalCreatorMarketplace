@@ -197,13 +197,13 @@ const App: React.FC = () => {
             <div className="space-y-4 max-w-[100vw] mx-auto px-4 overflow-hidden">
               <h1 className="flex flex-col uppercase text-center font-['Bebas_Neue'] tracking-[-0.02em] leading-[0.95]">
                 {/* 
-                  Refined hero text size: 
-                  Scaled down to clamp(2.2rem, 7.5vw, 7.5rem) for a tighter, more professional aesthetic.
+                  Further refined hero text size: 
+                  Scaled down by an additional 2% from clamp(2.2rem, 7.5vw, 7.5rem) to clamp(2.15rem, 7.35vw, 7.35rem).
                 */}
-                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.2rem,7.5vw,7.5rem)]">
+                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.15rem,7.35vw,7.35rem)]">
                   CREATOR REWARDS DONE RIGHT
                 </span>
-                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.2rem,7.5vw,7.5rem)] hover:brightness-125 transition-all duration-500 cursor-default">
+                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.15rem,7.35vw,7.35rem)] hover:brightness-125 transition-all duration-500 cursor-default">
                   MARKETING THAT ACTUALLY WORKS
                 </span>
               </h1>

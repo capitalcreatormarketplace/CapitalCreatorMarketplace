@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 import { Icons } from '../constants';
 import { processPayment } from '../services/solana';
@@ -19,6 +19,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isListing, setIsListing] = useState(false);
   const [isAuthorizingX, setIsAuthorizingX] = useState(false);
+  const [showXOverlay, setShowXOverlay] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamImgRef = useRef<HTMLInputElement>(null);
@@ -89,11 +90,18 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const handleAuthorizeX = () => {
     if (!formData.name) {
-      alert("Please enter a brand name first.");
+      alert("Please enter a brand name first to initiate X handshake.");
       return;
     }
+    
     setIsAuthorizingX(true);
-    // Simulate API delay for futuristic feel
+    setShowXOverlay(true);
+    
+    // Simulate opening the X OAuth Window
+    const authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=CAPITAL_CREATOR&redirect_uri=${window.location.origin}&scope=users.read%20tweet.read&state=state`;
+    window.open(authUrl, 'x_authorize', 'width=600,height=700');
+
+    // Simulate the OAuth callback/return logic
     setTimeout(() => {
       setFormData({
         ...formData,
@@ -102,7 +110,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
         channelLink: `https://x.com/${formData.name.replace(/\s+/g, '').toLowerCase()}`
       });
       setIsAuthorizingX(false);
-    }, 2000);
+      setShowXOverlay(false);
+    }, 3500);
   };
 
   const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
@@ -193,7 +202,23 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   if (isEditing || !profile.name) {
     return (
-      <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn">
+      <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn relative">
+        {showXOverlay && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fadeIn">
+            <div className="text-center space-y-8 max-w-sm">
+              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                 <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
+                 <div className="absolute inset-0 border-t-4 border-[#1DA1F2] rounded-full animate-spin"></div>
+                 <Icons.X className="w-8 h-8 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black uppercase tracking-widest text-white">Handshake in Progress</h3>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] leading-relaxed">Please complete the authorization in the X popup window...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -274,11 +299,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Identity Proof (Primary)</label>
                     {formData.isXVerified ? (
-                      <div className="w-full bg-[#BF953F]/10 border-2 border-[#BF953F] p-5 flex items-center justify-between group shadow-[0_0_20px_rgba(191,149,63,0.15)] transition-all">
+                      <div className="w-full bg-[#1DA1F2]/10 border-2 border-[#1DA1F2] p-5 flex items-center justify-between group shadow-[0_0_20px_rgba(29,161,242,0.15)] transition-all relative overflow-hidden">
+                        <div className="absolute top-0 right-0 px-3 py-1 bg-[#1DA1F2] text-black font-black text-[8px] uppercase tracking-widest">IDENTITY VERIFIED</div>
                         <div className="flex items-center gap-4">
-                           <div className="text-[#BF953F]"><Icons.Check className="w-6 h-6" /></div>
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_10px_rgba(29,161,242,0.6)]"><Icons.Check className="w-7 h-7" /></div>
                            <div>
-                             <p className="text-[10px] font-black uppercase tracking-widest text-[#BF953F]">X Verified Identity</p>
+                             <p className="text-[10px] font-black uppercase tracking-widest text-[#1DA1F2]">Verified X Terminal</p>
                              <p className="text-base font-black text-white">{formData.xHandle}</p>
                            </div>
                         </div>
@@ -289,12 +315,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         type="button"
                         onClick={handleAuthorizeX}
                         disabled={isAuthorizingX}
-                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#BF953F] hover:bg-[#BF953F]/5 transition-all group overflow-hidden relative"
+                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#1DA1F2] hover:bg-[#1DA1F2]/5 transition-all group overflow-hidden relative min-h-[70px]"
                       >
                         {isAuthorizingX ? (
                           <div className="flex items-center gap-3 animate-pulse">
-                            <div className="w-2 h-2 bg-[#BF953F] rounded-full"></div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Authenticating with X Terminal...</span>
+                            <div className="w-2 h-2 bg-[#1DA1F2] rounded-full"></div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Handshaking with X...</span>
                           </div>
                         ) : (
                           <>
@@ -347,8 +373,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="flex items-center justify-center md:justify-start gap-3">
                     <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">{profile.name}</h2>
                     {profile.isXVerified && (
-                      <div className="text-[#BF953F] flex items-center" title="X Verified Identity">
-                        <Icons.Check className="w-8 h-8 drop-shadow-[0_0_10px_rgba(191,149,63,0.5)]" />
+                      <div className="text-[#1DA1F2] flex items-center" title="X Verified Identity">
+                        <Icons.Check className="w-8 h-8 drop-shadow-[0_0_15px_rgba(29,161,242,0.6)]" />
                       </div>
                     )}
                   </div>

@@ -86,11 +86,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     setVerificationStep('SCANNING');
     // Simulate Terminal Scanning
     setTimeout(() => {
+      const handleWithAt = tempHandle.startsWith('@') ? tempHandle : `@${tempHandle}`;
       setFormData({
         ...formData,
-        name: tempHandle.replace('@', '').toUpperCase(),
+        name: handleWithAt,
         isXVerified: true,
-        xHandle: tempHandle.startsWith('@') ? tempHandle : `@${tempHandle}`,
+        xHandle: handleWithAt,
         channelLink: `https://x.com/${tempHandle.replace('@', '')}`
       });
       setVerificationStep('VERIFIED');
@@ -162,8 +163,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   if (isEditing || !profile.name) {
     return (
       <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn relative">
-        <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
-          <div className="text-center space-y-2 relative z-10">
+        <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-12 relative overflow-hidden">
+          <div className="text-center space-y-2 relative z-10 mb-8">
             <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
             <p className="text-[#BF953F] font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
           </div>
@@ -180,7 +181,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               </button>
             </div>
           ) : (
-            <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
+            <form onSubmit={handleProfileSubmit} className="space-y-12 relative z-10">
               <div className="flex flex-col items-center gap-4">
                 <div onClick={handleAvatarClick} className="relative w-36 h-36 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_40px_rgba(191,149,63,0.2)]">
                   {formData.avatarUrl ? (
@@ -195,29 +196,34 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 </div>
               </div>
 
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">
-                      {verificationStep === 'VERIFIED' ? 'Verified Account (Locked)' : 'Brand Name'}
+              <div className="space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-4">
+                    <label className="text-[9px] uppercase text-zinc-500 font-bold tracking-[0.2em]">
+                      {verificationStep === 'VERIFIED' ? 'VERIFIED ACCOUNT (LOCKED)' : 'BRAND NAME'}
                     </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. ChartMaster" 
-                      disabled={verificationStep === 'VERIFIED'}
-                      className={`w-full bg-black/60 border p-5 text-base font-bold outline-none transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/60 text-[#1DA1F2] opacity-90' : 'border-white/10 focus:border-[#BF953F] text-white'}`} 
-                      value={formData.name} 
-                      onChange={e => setFormData({...formData, name: e.target.value})} 
-                      required 
-                    />
+                    <div className={`w-full bg-black border p-6 min-h-[85px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/40 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
+                      {verificationStep === 'VERIFIED' ? (
+                        <span className="text-2xl font-black uppercase tracking-tighter">{formData.name}</span>
+                      ) : (
+                        <input 
+                          type="text" 
+                          placeholder="e.g. CAPITALCREATOR0" 
+                          className="w-full bg-transparent text-xl font-black uppercase tracking-tighter outline-none text-white placeholder:text-zinc-700" 
+                          value={formData.name} 
+                          onChange={e => setFormData({...formData, name: e.target.value.toUpperCase()})} 
+                          required 
+                        />
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Broadcast Cluster</label>
+                  <div className="space-y-4">
+                    <label className="text-[9px] uppercase text-zinc-500 font-bold tracking-[0.2em]">BROADCAST CLUSTER</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {PLATFORM_OPTIONS.map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
-                          <button key={p} type="button" onClick={() => handleTogglePlatform(p, true)} className={`p-3 border text-[9px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black/40 text-zinc-500 border-white/10'}`}>
+                          <button key={p} type="button" onClick={() => handleTogglePlatform(p, true)} className={`p-3 border text-[9px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black/40 text-zinc-500 border-white/10 hover:border-white/20'}`}>
                             {p}
                           </button>
                         );
@@ -226,69 +232,69 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Identity Proof (Primary)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <div className="space-y-4">
+                    <label className="text-[9px] uppercase text-zinc-500 font-bold tracking-[0.2em]">IDENTITY PROOF (PRIMARY)</label>
                     
                     {verificationStep === 'IDLE' && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 min-h-[100px]">
                         <input 
                           type="text" 
                           placeholder="@XHandle" 
-                          className="flex-grow bg-black/60 border border-white/10 p-5 text-base font-bold text-white outline-none focus:border-[#1DA1F2]" 
+                          className="flex-grow bg-black border border-white/10 p-5 text-xl font-black text-white outline-none focus:border-[#1DA1F2] placeholder:text-zinc-700" 
                           value={tempHandle}
                           onChange={e => setTempHandle(e.target.value)}
                         />
-                        <button type="button" onClick={startVerification} className="bg-[#1DA1F2] text-black px-6 font-black uppercase text-[10px] tracking-widest">Verify</button>
+                        <button type="button" onClick={startVerification} className="bg-[#1DA1F2] text-black px-8 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2]/80 transition-all">Verify</button>
                       </div>
                     )}
 
                     {verificationStep === 'CHALLENGE' && (
-                      <div className="bg-white/5 border border-[#1DA1F2]/30 p-5 space-y-4">
+                      <div className="bg-[#080a0c] border border-[#1DA1F2]/30 p-6 space-y-5 min-h-[100px]">
                         <p className="text-[9px] text-zinc-400 uppercase font-bold tracking-widest leading-relaxed">
                           To verify control of <span className="text-white">{tempHandle}</span>, post a tweet with:
                         </p>
-                        <div className="bg-black p-3 border border-dashed border-[#1DA1F2] text-center">
-                          <code className="text-[#1DA1F2] font-black text-lg tracking-widest">{verifyCode}</code>
+                        <div className="bg-black p-4 border border-dashed border-[#1DA1F2]/50 text-center">
+                          <code className="text-[#1DA1F2] font-black text-2xl tracking-[0.2em]">{verifyCode}</code>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           <a 
                             href={`https://x.com/intent/tweet?text=Verifying my account for @CapitalCreator0: ${verifyCode}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-grow bg-[#1DA1F2] text-black text-center py-3 font-black uppercase text-[9px] tracking-widest flex items-center justify-center gap-2"
+                            className="flex-grow bg-[#1DA1F2] text-black text-center py-4 font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-[#1DA1F2]/80 transition-all"
                           >
-                            <Icons.X className="w-3 h-3" /> Post Tweet
+                            <Icons.X className="w-4 h-4" /> POST TWEET
                           </a>
-                          <button type="button" onClick={handleVerifyNow} className="bg-white text-black px-4 font-black uppercase text-[9px] tracking-widest">I've Posted</button>
+                          <button type="button" onClick={handleVerifyNow} className="bg-white text-black px-6 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-200 transition-all">I'VE POSTED</button>
                         </div>
-                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="text-[8px] text-zinc-600 uppercase font-black tracking-widest hover:text-white">Cancel</button>
+                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="text-[9px] text-zinc-600 uppercase font-black tracking-widest hover:text-white transition-colors">Cancel</button>
                       </div>
                     )}
 
                     {verificationStep === 'SCANNING' && (
-                      <div className="w-full bg-black border border-[#1DA1F2]/40 p-10 flex flex-col items-center justify-center space-y-4">
+                      <div className="w-full bg-black border border-[#1DA1F2]/20 p-12 flex flex-col items-center justify-center space-y-6 min-h-[100px]">
                         <div className="w-full h-1 bg-white/5 relative overflow-hidden">
                            <div className="absolute inset-0 bg-[#1DA1F2] w-1/3 animate-[scanning_1.5s_infinite]"></div>
                         </div>
-                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] animate-pulse">Scanning X Terminal...</p>
+                        <p className="text-[10px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] animate-pulse">Scanning X Terminal...</p>
                         <style>{`@keyframes scanning { 0% { left: -33% } 100% { left: 100% } }`}</style>
                       </div>
                     )}
 
                     {verificationStep === 'VERIFIED' && (
-                      <div className="w-full bg-[#080a0c] border-2 border-[#1DA1F2] p-5 pt-7 flex items-center justify-between group transition-all relative overflow-visible h-[100px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
-                        {/* THE BLUE BOX HEADER TAB */}
-                        <div className="absolute -top-[1px] -right-[1px] px-8 py-2.5 bg-[#1DA1F2] text-black font-black text-[11px] uppercase tracking-[0.05em] z-10 shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+                      <div className="w-full bg-black border-2 border-[#1DA1F2] p-5 pt-8 flex items-center justify-between group transition-all relative overflow-visible min-h-[105px]">
+                        {/* REPLICA OF THE SCREENSHOT TAB */}
+                        <div className="absolute -top-[1px] -right-[1px] px-8 py-3 bg-[#1DA1F2] text-black font-black text-[12px] uppercase tracking-[0.05em] z-10 shadow-lg">
                           IDENTITY VERIFIED
                         </div>
                         
                         <div className="flex items-center gap-6">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.8)]">
-                              <Icons.Check className="w-10 h-10" strokeWidth={5} />
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_15px_rgba(29,161,242,0.7)]">
+                              <Icons.Check className="w-12 h-12" strokeWidth={5} />
                            </div>
-                           <div className="space-y-1">
-                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1DA1F2] opacity-90">Verified X Terminal</p>
+                           <div className="space-y-0.5">
+                             <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#1DA1F2] opacity-80">VERIFIED X TERMINAL</p>
                              <p className="text-3xl font-black text-white leading-none tracking-tight">{formData.xHandle}</p>
                            </div>
                         </div>
@@ -296,28 +302,29 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         <button 
                           type="button" 
                           onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); }} 
-                          className="text-[11px] text-zinc-500 hover:text-white uppercase font-black tracking-widest transition-colors pr-2 mt-4"
+                          className="text-[11px] text-zinc-600 hover:text-white uppercase font-black tracking-widest transition-colors mt-6 mr-1"
                         >
                           RESET
                         </button>
                       </div>
                     )}
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer h-[100px]" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
+                  <div className="space-y-4">
+                    <label className="text-[9px] uppercase text-zinc-500 font-bold tracking-[0.2em]">CATEGORY / NICHE</label>
+                    <select className="w-full bg-black border border-white/10 p-6 text-xl font-black uppercase tracking-tighter focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer min-h-[105px]" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
                       {Object.values(ContentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
                     </select>
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-4">
-                  <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Biography</label>
-                  <textarea placeholder="Briefly describe your channel..." className="w-full bg-black/60 border border-white/10 p-5 min-h-[140px] text-sm focus:border-[#BF953F] outline-none text-white transition-all resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+                <div className="space-y-4 pt-4">
+                  <label className="text-[9px] uppercase text-zinc-500 font-bold tracking-[0.2em]">BIOGRAPHY / PROJECT DIRECTIVE</label>
+                  <textarea placeholder="Briefly describe your channel audience and metrics..." className="w-full bg-black border border-white/10 p-6 min-h-[160px] text-base font-medium focus:border-[#BF953F] outline-none text-zinc-300 transition-all resize-none leading-relaxed" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
                 </div>
-                <div className="flex justify-between items-center pt-10 border-t border-white/5">
-                  <button type="button" onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-500 hover:text-white transition-colors">Back</button>
-                  <button type="submit" className="bg-white text-black px-14 py-6 font-black uppercase text-[12px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">Save Profile</button>
+                
+                <div className="flex justify-between items-center pt-12 border-t border-white/5">
+                  <button type="button" onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-500 hover:text-white transition-colors">BACK</button>
+                  <button type="submit" className="bg-white text-black px-16 py-6 font-black uppercase text-[12px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">SAVE & INITIALIZE PROFILE</button>
                 </div>
               </div>
             </form>

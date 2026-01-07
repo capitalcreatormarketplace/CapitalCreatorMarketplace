@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 import { Icons } from '../constants';
 import { processPayment } from '../services/solana';
@@ -16,6 +16,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isListing, setIsListing] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamImgRef = useRef<HTMLInputElement>(null);
   
@@ -29,8 +30,26 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     }
   );
 
+  // Calendar & Time Logic
+  const availableDays = useMemo(() => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }, []);
+
+  const [selectedDayIdx, setSelectedDayIdx] = useState<number>(0);
+  const [selectedTime, setSelectedTime] = useState({
+    hour: '12',
+    minute: '00',
+    period: 'PM'
+  });
+
   const [invData, setInvData] = useState({
-    streamTime: '',
+    streamTime: '', // This will be calculated on submit
     placementDetail: '',
     priceSol: 100, // USDC Default
     platform: 'YouTube' as const,
@@ -38,12 +57,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     adPosition: 'bottom-right' as AdPosition,
     streamPreviewUrl: ''
   });
-
-  const now = new Date();
-  const maxDate = new Date();
-  maxDate.setDate(now.getDate() + 7);
-  const minDateString = now.toISOString().slice(0, 16);
-  const maxDateString = maxDate.toISOString().slice(0, 16);
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,17 +95,22 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       alert("Please upload a stream preview image first.");
       return;
     }
-    if (!invData.streamTime) {
-      alert("Please select a valid stream date within the next 7 days.");
-      return;
-    }
+
+    // Construct final timestamp string
+    const d = availableDays[selectedDayIdx];
+    let hourNum = parseInt(selectedTime.hour);
+    if (selectedTime.period === 'PM' && hourNum !== 12) hourNum += 12;
+    if (selectedTime.period === 'AM' && hourNum === 12) hourNum = 0;
+    
+    d.setHours(hourNum, parseInt(selectedTime.minute), 0, 0);
+    const finalStreamTime = d.toISOString();
 
     setIsListing(true);
     try {
       // Spam prevention: $0.01 USDC Fee
       const result = await processPayment(profile.address, 0.01);
       if (result.success) {
-        onListInventory(invData);
+        onListInventory({ ...invData, streamTime: finalStreamTime });
       }
     } catch (e) {
       console.error(e);
@@ -101,155 +119,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       setIsListing(false);
     }
   };
-
-  const renderInitialSetup = () => (
-    <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div className="text-center space-y-2 relative z-10">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
-        <p className="text-[#BF953F] font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
-      </div>
-
-      {formData.role === UserRole.UNDEFINED ? (
-        <div className="space-y-6 relative z-10">
-          <div className="text-center">
-            <p className="text-[10px] uppercase text-zinc-400 font-black tracking-[0.4em]">[Step 1 of 2] Role Selection Required</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <button 
-              onClick={() => setFormData({...formData, role: UserRole.CREATOR})}
-              className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
-                 <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
-              </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Creator</h3>
-              <p className="text-sm text-zinc-400">List your ad inventory, connect with sponsors, and earn revenue directly.</p>
-            </button>
-            <button 
-              onClick={() => setFormData({...formData, role: UserRole.SPONSOR})}
-              className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
-                 <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
-              </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Sponsor</h3>
-              <p className="text-sm text-zinc-400">Discover creators, purchase ad placements, and grow your brand's reach.</p>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
-          <div className="text-center space-y-6">
-            <div className="inline-block bg-white text-black px-4 py-1 text-[9px] font-black uppercase tracking-widest mb-2">
-              [Step 2 of 2] Complete Your Profile
-            </div>
-            
-            <div className="flex flex-col items-center gap-4">
-              <div 
-                onClick={handleAvatarClick}
-                className="relative w-36 h-36 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_40px_rgba(191,149,63,0.2)]"
-              >
-                {formData.avatarUrl ? (
-                  <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                ) : (
-                  <div className="text-center space-y-2">
-                    <div className="text-[#BF953F] flex justify-center"><Icons.Plus className="w-8 h-8" /></div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#BF953F] group-hover:text-white">Upload Brand Logo</span>
-                  </div>
-                )}
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
-                <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-              </div>
-               <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
-                <select 
-                  className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" 
-                  value={formData.platform || 'YouTube'} 
-                  onChange={e => setFormData({...formData, platform: e.target.value})}
-                >
-                  <option value="YouTube">YouTube</option>
-                  <option value="Twitch">Twitch</option>
-                  <option value="X">X (Twitter)</option>
-                  <option value="Kick">Kick</option>
-                  <option value="TikTok">TikTok</option>
-                  <option value="Instagram">Instagram</option>
-                  <option value="Zora">Zora</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Channel Link</label>
-                <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
-              </div>
-              <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
-                <select 
-                   className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" 
-                   value={formData.niche || ContentCategory.CRYPTO} 
-                   onChange={e => setFormData({...formData, niche: e.target.value})}
-                >
-                  {Object.values(ContentCategory).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Location / Timezone</label>
-                <input type="text" placeholder="e.g. UTC-5 / New York" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.timezone} onChange={e => setFormData({...formData, timezone: e.target.value})} />
-              </div>
-              <div className="space-y-3">
-                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Streaming Schedule</label>
-                <input type="text" placeholder="e.g. Mon-Fri 6PM-10PM EST" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.schedule} onChange={e => setFormData({...formData, schedule: e.target.value})} />
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-4">
-               <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
-              <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/60 border border-white/10 p-5 min-h-[140px] text-sm focus:border-[#BF953F] outline-none text-white transition-all resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
-            </div>
-
-            <div className="flex justify-between items-center pt-10 border-t border-white/5">
-              <button 
-                type="button"
-                onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} 
-                className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-500 hover:text-white transition-colors"
-              >
-                Back
-              </button>
-              <button type="submit" className="bg-white text-black px-14 py-6 font-black uppercase text-[12px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-                Save & Initialize Profile
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
-    </div>
-  );
-
-  if (isEditing || !profile.name) {
-    return (
-      <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn">
-        {renderInitialSetup()}
-      </div>
-    );
-  }
 
   const getPositionClasses = (pos: AdPosition) => {
     switch (pos) {
@@ -262,6 +131,108 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       default: return '';
     }
   };
+
+  if (isEditing || !profile.name) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn">
+        <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="text-center space-y-2 relative z-10">
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
+            <p className="text-[#BF953F] font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
+          </div>
+
+          {formData.role === UserRole.UNDEFINED ? (
+            <div className="space-y-6 relative z-10">
+              <div className="text-center">
+                <p className="text-[10px] uppercase text-zinc-400 font-black tracking-[0.4em]">[Step 1 of 2] Role Selection Required</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button onClick={() => setFormData({...formData, role: UserRole.CREATOR})} className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                    <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
+                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Creator</h3>
+                  <p className="text-sm text-zinc-400">List your ad inventory, connect with sponsors, and earn revenue directly.</p>
+                </button>
+                <button onClick={() => setFormData({...formData, role: UserRole.SPONSOR})} className="group p-8 border-2 border-white/10 hover:border-[#BF953F]/40 hover:bg-[#BF953F]/5 transition-all space-y-3 text-left relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
+                    <div className="w-12 h-12 border-t-2 border-r-2 border-[#BF953F]"></div>
+                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#F1EBD9]">Sponsor</h3>
+                  <p className="text-sm text-zinc-400">Discover creators, purchase ad placements, and grow your brand's reach.</p>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
+              <div className="text-center space-y-6">
+                <div className="inline-block bg-white text-black px-4 py-1 text-[9px] font-black uppercase tracking-widest mb-2">
+                  [Step 2 of 2] Complete Your Profile
+                </div>
+                <div className="flex flex-col items-center gap-4">
+                  <div onClick={handleAvatarClick} className="relative w-36 h-36 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_40px_rgba(191,149,63,0.2)]">
+                    {formData.avatarUrl ? (
+                      <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                    ) : (
+                      <div className="text-center space-y-2">
+                        <div className="text-[#BF953F] flex justify-center"><Icons.Plus className="w-8 h-8" /></div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[#BF953F] group-hover:text-white">Upload Brand Logo</span>
+                      </div>
+                    )}
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
+                    <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" value={formData.platform || 'YouTube'} onChange={e => setFormData({...formData, platform: e.target.value})}>
+                      <option value="YouTube">YouTube</option>
+                      <option value="Twitch">Twitch</option>
+                      <option value="X">X (Twitter)</option>
+                      <option value="Kick">Kick</option>
+                      <option value="TikTok">TikTok</option>
+                      <option value="Instagram">Instagram</option>
+                      <option value="Zora">Zora</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Channel Link</label>
+                    <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
+                      {Object.values(ContentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-3 pt-4">
+                  <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
+                  <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/60 border border-white/10 p-5 min-h-[140px] text-sm focus:border-[#BF953F] outline-none text-white transition-all resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+                </div>
+                <div className="flex justify-between items-center pt-10 border-t border-white/5">
+                  <button type="button" onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-500 hover:text-white transition-colors">Back</button>
+                  <button type="submit" className="bg-white text-black px-14 py-6 font-black uppercase text-[12px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">Save & Initialize Profile</button>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 py-8 animate-fadeIn pb-20">
@@ -314,11 +285,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <div className="lg:w-1/3 space-y-10">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-black uppercase tracking-tight text-white">Broadcast Inventory</h3>
-                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">
-                    Deploy your content slots to the marketplace terminal. High visibility for premium sponsors.
-                  </p>
+                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">Deploy your content slots to the marketplace terminal. High visibility for premium sponsors.</p>
                 </div>
-                
                 <div className="p-8 bg-[#BF953F]/5 border-2 border-[#BF953F]/20 space-y-6">
                   <div className="flex items-center gap-4 text-[#BF953F]">
                     <div className="w-1.5 h-1.5 bg-[#BF953F] rounded-full animate-pulse"></div>
@@ -335,78 +303,90 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               </div>
 
               <div className="lg:w-2/3 space-y-10">
-                {/* 1. Stream Preview Upload */}
                 <div className="space-y-3">
                   <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">1. Upload Stream Environment Preview</label>
-                  <div 
-                    onClick={() => streamImgRef.current?.click()}
-                    className="relative aspect-video w-full bg-black border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer group hover:border-[#BF953F]/40 transition-all overflow-hidden"
-                  >
+                  <div onClick={() => streamImgRef.current?.click()} className="relative aspect-video w-full bg-black border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer group hover:border-[#BF953F]/40 transition-all overflow-hidden">
                     {invData.streamPreviewUrl ? (
                       <>
                         <img src={invData.streamPreviewUrl} className="w-full h-full object-cover" alt="Stream Preview" />
-                        <div className={`absolute ${getPositionClasses(invData.adPosition)} z-10 bg-white/40 backdrop-blur-md border border-white px-3 py-1.5 text-[10px] text-black font-black uppercase tracking-tighter shadow-2xl animate-pulse`}>
-                          YOUR LOGO HERE
-                        </div>
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <span className="text-white font-black uppercase tracking-widest text-xs">Change Preview</span>
-                        </div>
+                        <div className={`absolute ${getPositionClasses(invData.adPosition)} z-10 bg-white/40 backdrop-blur-md border border-white px-3 py-1.5 text-[10px] text-black font-black uppercase tracking-tighter shadow-2xl animate-pulse`}>YOUR LOGO HERE</div>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-white font-black uppercase tracking-widest text-xs">Change Preview</span></div>
                       </>
                     ) : (
                       <div className="text-center space-y-2 opacity-50 group-hover:opacity-100">
                         <Icons.Plus className="w-10 h-10 mx-auto text-zinc-500" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Click to upload what your stream looks like</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Click to upload stream layout</p>
                       </div>
                     )}
                     <input type="file" ref={streamImgRef} className="hidden" accept="image/*" onChange={handleStreamPreviewUpload} />
                   </div>
                 </div>
 
-                {/* 2. Position Selector */}
                 <div className="space-y-3">
-                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">2. Select Primary Ad Coordinate</label>
+                  <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">2. Select Ad Placement Position</label>
                   <div className="grid grid-cols-3 gap-4">
                     {(['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as AdPosition[]).map(pos => (
-                      <button 
-                        key={pos}
-                        onClick={() => setInvData({...invData, adPosition: pos})}
-                        className={`p-4 border text-[9px] font-black uppercase tracking-widest transition-all ${invData.adPosition === pos ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-white/5 text-zinc-500 border-white/5 hover:border-white/20'}`}
-                      >
-                        {pos.replace('-', ' ')}
-                      </button>
+                      <button key={pos} onClick={() => setInvData({...invData, adPosition: pos})} className={`p-4 border text-[9px] font-black uppercase tracking-widest transition-all ${invData.adPosition === pos ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-white/5 text-zinc-500 border-white/5 hover:border-white/20'}`}>{pos.replace('-', ' ')}</button>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-10">
+                {/* New Custom Calendar Picker Section */}
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">3. Select Broadcast Date (Next 7 Days)</label>
+                    <div className="grid grid-cols-4 md:grid-cols-7 gap-3">
+                      {availableDays.map((date, idx) => {
+                        const isSelected = selectedDayIdx === idx;
+                        return (
+                          <button 
+                            key={idx}
+                            onClick={() => setSelectedDayIdx(idx)}
+                            className={`flex flex-col items-center justify-center py-5 border transition-all ${isSelected ? 'bg-[#BF953F] border-[#BF953F] shadow-[0_0_15px_rgba(191,149,63,0.3)]' : 'bg-white/5 border-white/10 hover:border-white/30'}`}
+                          >
+                            <span className={`text-[8px] font-black uppercase tracking-widest ${isSelected ? 'text-black' : 'text-zinc-500'}`}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                            <span className={`text-xl font-black mt-1 ${isSelected ? 'text-black' : 'text-white'}`}>{date.getDate()}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">4. Select Event Start Time</label>
+                    <div className="flex gap-4">
+                      <select 
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        value={selectedTime.hour}
+                        onChange={e => setSelectedTime({...selectedTime, hour: e.target.value})}
+                      >
+                        {Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map(h => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                      <select 
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        value={selectedTime.minute}
+                        onChange={e => setSelectedTime({...selectedTime, minute: e.target.value})}
+                      >
+                        {['00', '15', '30', '45'].map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                      <select 
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        value={selectedTime.period}
+                        onChange={e => setSelectedTime({...selectedTime, period: e.target.value})}
+                      >
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-10 pt-4 border-t border-white/5">
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Streaming Host</label>
                     <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.platform} onChange={e => setInvData({...invData, platform: e.target.value as any})}>
                       <option>YouTube</option><option>Twitch</option><option>Facebook</option><option>X</option><option>Kick</option><option>Zora</option><option>PumpFun</option><option>Rumble</option><option>Instagram</option>
                     </select>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Content Vertical</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold" value={invData.category} onChange={e => setInvData({...invData, category: e.target.value as ContentCategory})}>
-                      {Object.values(ContentCategory).map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Live Event Timestamp (Next 7 Days Only)</label>
-                    <input 
-                      type="datetime-local" 
-                      min={minDateString} 
-                      max={maxDateString} 
-                      className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all cursor-pointer font-bold appearance-none" 
-                      value={invData.streamTime} 
-                      onChange={e => setInvData({...invData, streamTime: e.target.value})} 
-                      required 
-                    />
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Listing Value (USDC)</label>
@@ -416,18 +396,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
                 <div className="space-y-3">
                   <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Integration Strategy Detail</label>
-                  <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black/60 border border-white/10 p-6 text-base h-52 resize-none text-white focus:border-[#BF953F] outline-none transition-all leading-relaxed" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
+                  <textarea placeholder="Explain your placement strategy, audience demographic, and how you will highlight the sponsor logo..." className="w-full bg-black/60 border border-white/10 p-6 text-base h-40 resize-none text-white focus:border-[#BF953F] outline-none transition-all leading-relaxed" value={invData.placementDetail} onChange={e => setInvData({...invData, placementDetail: e.target.value})} required />
                 </div>
 
                 <div className="pt-10">
-                  <button 
-                    onClick={handleListSubmit}
-                    disabled={isListing}
-                    className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] flex flex-col items-center justify-center gap-1 hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)] disabled:opacity-50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <Icons.Plus /> {isListing ? 'AUTHORIZING SOLANA FEE...' : 'DEPLOY INVENTORY TO GLOBAL TERMINAL'}
-                    </div>
+                  <button onClick={handleListSubmit} disabled={isListing} className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] flex flex-col items-center justify-center gap-1 hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)] disabled:opacity-50">
+                    <div className="flex items-center gap-4"><Icons.Plus /> {isListing ? 'AUTHORIZING SOLANA FEE...' : 'DEPLOY INVENTORY TO GLOBAL TERMINAL'}</div>
                     {!isListing && <span className="text-[9px] opacity-70">PAY $0.01 USDC SPAM VERIFICATION FEE</span>}
                   </button>
                 </div>
@@ -436,16 +410,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
           </div>
         ) : (
           <div className="glass p-12 rounded-none border-white/10 flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-               <span className="bg-white text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.5em] shadow-[0_0_20px_rgba(255,255,255,0.2)]">SPONSOR HUB</span>
-            </div>
+            <div className="absolute top-0 right-0 p-4"><span className="bg-white text-black px-6 py-2 text-[10px] font-black uppercase tracking-[0.5em] shadow-[0_0_20px_rgba(255,255,255,0.2)]">SPONSOR HUB</span></div>
             <div className="flex flex-col lg:flex-row gap-20">
               <div className="lg:w-1/3 space-y-10">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-black uppercase tracking-tight text-white">Client Identity</h3>
-                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">
-                    Acquire premium ad slots across the creator ecosystem. Instant settlement, high impact branding.
-                  </p>
+                  <p className="text-sm text-gray-400 leading-relaxed uppercase tracking-wider font-bold">Acquire premium ad slots across the creator ecosystem. Instant settlement, high impact branding.</p>
                 </div>
                 <div className="p-8 border-2 border-white/5 bg-white/5 space-y-6">
                    <p className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-300">Client Privileges</p>
@@ -460,17 +430,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               <div className="lg:w-2/3">
                 {sponsorApp?.status === SponsorStatus.APPROVED ? (
                   <div className="p-16 bg-white/5 border-2 border-[#BF953F]/40 flex flex-col items-center justify-center text-center space-y-10">
-                    <div className="w-24 h-24 rounded-none bg-[#BF953F] text-white flex items-center justify-center shadow-[0_0_50px_rgba(191,149,63,0.5)]">
-                      <Icons.Check className="w-12 h-12" />
-                    </div>
+                    <div className="w-24 h-24 rounded-none bg-[#BF953F] text-white flex items-center justify-center shadow-[0_0_50px_rgba(191,149,63,0.5)]"><Icons.Check className="w-12 h-12" /></div>
                     <div className="space-y-4">
                       <h2 className="text-4xl font-black uppercase text-[#F1EBD9] tracking-tighter">Account Fully Verified</h2>
                       <p className="text-sm text-zinc-500 uppercase tracking-[0.4em] font-black">Authorized for Global Content Acquisition</p>
                     </div>
-                    <div className="w-full h-px bg-white/10"></div>
-                    <button onClick={() => window.location.hash = 'marketplace'} className="bg-white text-black px-16 py-6 font-black text-[12px] uppercase tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-xl">
-                      ENTER MARKETPLACE TERMINAL
-                    </button>
+                    <button onClick={() => window.location.hash = 'marketplace'} className="bg-white text-black px-16 py-6 font-black text-[12px] uppercase tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-xl">ENTER MARKETPLACE TERMINAL</button>
                   </div>
                 ) : sponsorApp?.status === SponsorStatus.PENDING ? (
                   <div className="p-16 bg-white/5 border-2 border-dashed border-white/20 text-center space-y-10">
@@ -481,37 +446,21 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     </div>
                     <div className="space-y-4">
                       <p className="text-3xl font-black uppercase text-white tracking-[0.2em]">Verification In Progress</p>
-                      <p className="text-xs text-zinc-500 uppercase tracking-[0.4em] leading-relaxed font-bold">
-                        Compliance Protocol Phase II. <br /> Expected System Approval: 24 Hours.
-                      </p>
+                      <p className="text-xs text-zinc-500 uppercase tracking-[0.4em] leading-relaxed font-bold">Compliance Protocol Phase II. <br /> Expected System Approval: 24 Hours.</p>
                     </div>
                   </div>
                 ) : (
                   <form className="space-y-10" onSubmit={(e) => { e.preventDefault(); onApplySponsor(appData); }}>
                     <div className="grid grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Contact Representative</label>
-                        <input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Legal Business Name</label>
-                        <input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required />
-                      </div>
+                      <div className="space-y-3"><label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Contact Representative</label><input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.name} onChange={e => setAppData({...appData, name: e.target.value})} required /></div>
+                      <div className="space-y-3"><label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Legal Business Name</label><input type="text" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.companyName} onChange={e => setAppData({...appData, companyName: e.target.value})} required /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Months Established</label>
-                        <input type="number" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Corporate Logo Source (URL)</label>
-                        <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required />
-                      </div>
+                      <div className="space-y-3"><label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Months Established</label><input type="number" className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.monthsInBusiness} onChange={e => setAppData({...appData, monthsInBusiness: Number(e.target.value)})} required /></div>
+                      <div className="space-y-3"><label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">Corporate Logo Source (URL)</label><input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base text-white focus:border-[#BF953F] outline-none transition-all font-bold" value={appData.logoUrl} onChange={e => setAppData({...appData, logoUrl: e.target.value})} required /></div>
                     </div>
                     <div className="pt-10">
-                      <button type="submit" className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
-                        INITIATE VERIFICATION PROTOCOL
-                      </button>
+                      <button type="submit" className="w-full bg-white text-black py-8 font-black uppercase text-[14px] tracking-[0.5em] hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">INITIATE VERIFICATION PROTOCOL</button>
                     </div>
                   </form>
                 )}

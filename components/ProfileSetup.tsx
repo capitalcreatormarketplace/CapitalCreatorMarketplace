@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 import { Icons } from '../constants';
 import { processPayment } from '../services/solana';
@@ -21,6 +21,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   
   const [verificationStep, setVerificationStep] = useState<'IDLE' | 'CHALLENGE' | 'SCANNING' | 'VERIFIED'>(profile.isXVerified ? 'VERIFIED' : 'IDLE');
   const [tempHandle, setTempHandle] = useState('');
+  const [tweetUrl, setTweetUrl] = useState('');
   const [verifyCode] = useState(() => `CAPITAL-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,6 +32,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       name: '', companyName: '', monthsInBusiness: 0, logoUrl: '', status: SponsorStatus.NONE
     }
   );
+
+  // Auto-sync name when handle is verified
+  useEffect(() => {
+    if (verificationStep === 'VERIFIED' && formData.xHandle) {
+      setFormData(prev => ({ ...prev, name: prev.xHandle?.toUpperCase() || '' }));
+    }
+  }, [verificationStep, formData.xHandle]);
 
   const availableDays = useMemo(() => {
     const days = [];
@@ -72,35 +80,31 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   };
 
   const startVerification = () => {
-    if (!tempHandle) return alert("Enter your X handle first.");
+    const cleanHandle = tempHandle.trim().replace('@', '');
+    if (!cleanHandle) return alert("Enter your X handle first.");
+    setTempHandle(cleanHandle);
     setVerificationStep('CHALLENGE');
   };
 
   const handleVerifyNow = () => {
+    if (!tweetUrl.includes('x.com/') && !tweetUrl.includes('twitter.com/')) {
+      alert("Verification Failed: Please provide the URL to your X verification post.");
+      return;
+    }
+    
     setVerificationStep('SCANNING');
+    // Simulate real API scraping/validation
     setTimeout(() => {
-      const handleWithAt = tempHandle.startsWith('@') ? tempHandle : `@${tempHandle}`;
+      const handleWithAt = `@${tempHandle}`;
       setFormData({
         ...formData,
         name: handleWithAt.toUpperCase(),
         isXVerified: true,
         xHandle: handleWithAt,
-        channelLink: `https://x.com/${tempHandle.replace('@', '')}`
+        channelLink: `https://x.com/${tempHandle}`
       });
       setVerificationStep('VERIFIED');
-    }, 4500); // Slightly longer for "realistic" feel
-  };
-
-  const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
-    if (isProfile) {
-      const current = formData.platforms || [];
-      const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
-      setFormData({...formData, platforms: updated});
-    } else {
-      const current = invData.platforms;
-      const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
-      setInvData({...invData, platforms: updated});
-    }
+    }, 4500);
   };
 
   const handleAvatarClick = () => fileInputRef.current?.click();
@@ -197,7 +201,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     </label>
                     <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/60 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
-                        <span className="text-3xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(29,161,242,0.3)]">{formData.name}</span>
+                        <span className="text-3xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(29,161,242,0.3)] truncate">{formData.name}</span>
                       ) : (
                         <input 
                           type="text" 
@@ -216,7 +220,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       {PLATFORM_OPTIONS.slice(0, 6).map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
-                          <button key={p} type="button" onClick={() => handleTogglePlatform(p, true)} className={`p-2 border text-[8px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
+                          <button key={p} type="button" onClick={() => { if(verificationStep !== 'VERIFIED') { const current = formData.platforms || []; const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p]; setFormData({...formData, platforms: updated}); } }} className={`p-2 border text-[8px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-[#BF953F] text-black border-[#BF953F]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
                             {p}
                           </button>
                         );
@@ -243,23 +247,33 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     )}
 
                     {verificationStep === 'CHALLENGE' && (
-                      <div className="bg-black border border-[#1DA1F2]/20 p-5 space-y-6 animate-fadeIn h-[200px] flex flex-col justify-center">
+                      <div className="bg-black border border-[#1DA1F2]/20 p-5 space-y-4 animate-fadeIn">
                         <div className="space-y-1">
                            <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-[0.2em]">AUTHENTICATION PROTOCOL</p>
-                           <p className="text-[10px] text-white/60 font-medium leading-relaxed">Please post the following verification code to your X timeline. We will scan your feed to confirm ownership.</p>
+                           <p className="text-[9px] text-white/40 leading-relaxed">Step 1: Post the code. Step 2: Paste the URL below.</p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="space-y-4">
                           <a 
                             href={`https://x.com/intent/tweet?text=Verifying my account for @CapitalCreator0: ${verifyCode}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-[2] block bg-[#1DA1F2]/10 p-4 border border-dashed border-[#1DA1F2]/40 text-center hover:bg-[#1DA1F2]/20 transition-all group"
+                            className="block bg-[#1DA1F2]/10 p-4 border border-dashed border-[#1DA1F2]/40 text-center hover:bg-[#1DA1F2]/20 transition-all group"
                           >
                             <code className="text-[#1DA1F2] font-black text-lg tracking-[0.1em] group-hover:brightness-125">{verifyCode}</code>
+                            <p className="text-[8px] text-[#1DA1F2] mt-1 font-black">CLICK TO DRAFT TWEET</p>
                           </a>
-                          <button type="button" onClick={handleVerifyNow} className="flex-1 bg-white text-black font-black uppercase text-[9px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">I'VE POSTED</button>
+                          <div className="space-y-2">
+                             <input 
+                               type="url" 
+                               placeholder="Paste Post URL here (x.com/yourname/status/...)"
+                               className="w-full bg-black border border-white/10 p-3 text-[10px] text-white outline-none focus:border-[#1DA1F2] placeholder:text-zinc-800"
+                               value={tweetUrl}
+                               onChange={e => setTweetUrl(e.target.value)}
+                             />
+                             <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-4 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">VALIDATE POST</button>
+                          </div>
                         </div>
-                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="text-[8px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.4em] transition-colors text-center">Abort Verification</button>
+                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[8px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.4em] transition-colors text-center">Abort Verification</button>
                       </div>
                     )}
 
@@ -269,7 +283,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         <div className="w-3/4 h-1 bg-white/5 relative overflow-hidden rounded-full">
                            <div className="absolute inset-0 bg-[#1DA1F2] w-1/4 animate-[scanning_1.5s_infinite] shadow-[0_0_15px_rgba(29,161,242,0.8)]"></div>
                         </div>
-                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] z-10">SEARCHING X TIMELINE FOR {verifyCode}...</p>
+                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] z-10">SCRAPING X TIMELINE...</p>
                         <style>{`@keyframes scanning { 0% { left: -25% } 100% { left: 100% } }`}</style>
                       </div>
                     )}
@@ -278,7 +292,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       <div className="w-full bg-black border border-[#1DA1F2] p-4 flex items-center justify-between group relative h-[75px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
                         {/* Blue Identity Box matching screenshot style */}
                         <div className="flex items-center gap-5">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)] animate-pulse">
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)]">
                               <Icons.Check className="w-10 h-10" strokeWidth={5} />
                            </div>
                            <div className="space-y-0.5">
@@ -287,14 +301,14 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                            </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-2">
-                          <div className="bg-[#1DA1F2] text-black px-4 py-2 font-black text-[9px] uppercase tracking-widest shadow-lg">
+                        <div className="flex flex-col items-end justify-between h-full">
+                          <div className="absolute -top-[1px] -right-[1px] bg-[#1DA1F2] text-black px-4 py-2 font-black text-[9px] uppercase tracking-widest shadow-lg">
                             IDENTITY VERIFIED
                           </div>
                           <button 
                             type="button" 
-                            onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); }} 
-                            className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.2em] transition-colors"
+                            onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); setTweetUrl(''); }} 
+                            className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.2em] transition-colors mt-auto"
                           >
                             RESET
                           </button>

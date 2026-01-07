@@ -65,12 +65,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const renderInitialSetup = () => (
     <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
-      {/* Decorative background element */}
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Decorative gold background element */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="text-center space-y-2 relative z-10">
         <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
-        <p className="text-zinc-500 font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
+        <p className="text-[#BF953F] font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Capital Creator profile</p>
       </div>
 
       {formData.role === UserRole.UNDEFINED ? (
@@ -104,20 +105,22 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       ) : (
         <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
           <div className="text-center space-y-6">
-            <p className="text-[10px] uppercase text-zinc-400 font-black tracking-[0.4em]">[Step 2 of 2] Complete Your Profile</p>
+            <div className="inline-block bg-white text-black px-4 py-1 text-[9px] font-black uppercase tracking-widest mb-2">
+              [Step 2 of 2] Complete Your Profile
+            </div>
             
             {/* Avatar Upload Circle */}
             <div className="flex flex-col items-center gap-4">
               <div 
                 onClick={handleAvatarClick}
-                className="relative w-32 h-32 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_30px_rgba(191,149,63,0.15)]"
+                className="relative w-36 h-36 rounded-full border-2 border-[#BF953F] flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40 shadow-[0_0_40px_rgba(191,149,63,0.2)]"
               >
                 {formData.avatarUrl ? (
                   <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                 ) : (
-                  <div className="text-center space-y-1">
-                    <div className="text-[#BF953F] flex justify-center"><Icons.Plus className="w-6 h-6" /></div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[#BF953F]/70 group-hover:text-[#BF953F]">Upload Logo</span>
+                  <div className="text-center space-y-2">
+                    <div className="text-[#BF953F] flex justify-center"><Icons.Plus className="w-8 h-8" /></div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[#BF953F] group-hover:text-white">Upload Brand Logo</span>
                   </div>
                 )}
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
@@ -125,16 +128,16 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
-                <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Brand Name</label>
+                <input type="text" placeholder="e.g. ChartMaster" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
               </div>
-               <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
+               <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Platform</label>
                 <select 
-                  className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white appearance-none" 
+                  className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" 
                   value={formData.platform || 'YouTube'} 
                   onChange={e => setFormData({...formData, platform: e.target.value})}
                 >
@@ -150,15 +153,15 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Channel Link (Required)</label>
-                <input type="url" placeholder="https://youtube.com/@yourchannel" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Channel Link</label>
+                <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
               </div>
-              <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
+              <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
                 <select 
-                   className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white appearance-none" 
+                   className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" 
                    value={formData.niche || ContentCategory.CRYPTO} 
                    onChange={e => setFormData({...formData, niche: e.target.value})}
                 >
@@ -169,31 +172,31 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Location / Timezone</label>
-                <input type="text" placeholder="e.g. UTC-5 / New York" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.timezone} onChange={e => setFormData({...formData, timezone: e.target.value})} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Location / Timezone</label>
+                <input type="text" placeholder="e.g. UTC-5 / New York" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.timezone} onChange={e => setFormData({...formData, timezone: e.target.value})} />
               </div>
-              <div className="space-y-2">
-                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Streaming Schedule</label>
-                <input type="text" placeholder="e.g. Mon-Fri 6PM-10PM EST" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.schedule} onChange={e => setFormData({...formData, schedule: e.target.value})} />
+              <div className="space-y-3">
+                <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Streaming Schedule</label>
+                <input type="text" placeholder="e.g. Mon-Fri 6PM-10PM EST" className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.schedule} onChange={e => setFormData({...formData, schedule: e.target.value})} />
               </div>
             </div>
 
-            <div className="space-y-2 pt-4">
-               <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
-              <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/50 border border-white/10 p-4 min-h-[110px] text-sm focus:border-[#BF953F]/60 outline-none text-white transition-colors" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+            <div className="space-y-3 pt-4">
+               <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
+              <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/60 border border-white/10 p-5 min-h-[140px] text-sm focus:border-[#BF953F] outline-none text-white transition-all resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
             </div>
 
-            <div className="flex justify-between items-center pt-8 border-t border-white/5">
+            <div className="flex justify-between items-center pt-10 border-t border-white/5">
               <button 
                 type="button"
                 onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} 
-                className="text-[9.4px] uppercase tracking-[0.5em] text-zinc-500 hover:text-white transition-colors"
+                className="text-[10px] uppercase font-black tracking-[0.4em] text-zinc-500 hover:text-white transition-colors"
               >
                 Back
               </button>
-              <button type="submit" className="bg-white text-black px-12 py-5 font-black uppercase text-[11px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+              <button type="submit" className="bg-white text-black px-14 py-6 font-black uppercase text-[12px] tracking-widest hover:bg-[#BF953F] hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                 Save & Initialize Profile
               </button>
             </div>

@@ -4,7 +4,7 @@ import Layout from './components/Layout';
 import Marketplace from './components/Marketplace';
 import ProfileSetup from './components/ProfileSetup';
 import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory } from './types';
-import { connectWallet, processPayment } from './services/solana';
+import { connectWallet, processPayment, disconnectWallet } from './services/solana';
 import { optimizeListingDescription } from './services/gemini';
 import { Icons } from './constants';
 
@@ -87,6 +87,14 @@ const App: React.FC = () => {
         setCurrentView('profile');
       }
     }
+  };
+
+  const handleDisconnect = async () => {
+    await disconnectWallet();
+    setWalletAddress(null);
+    setProfile(null);
+    setSponsorApp(undefined);
+    setCurrentView('home');
   };
 
   const handleSaveProfile = (updatedProfile: UserProfile) => {
@@ -286,7 +294,7 @@ const App: React.FC = () => {
     return null;
   };
 
-  return <Layout walletAddress={walletAddress} onConnect={handleConnect} onNavigate={(v: any) => setCurrentView(v)} currentView={currentView}>{renderView()}</Layout>;
+  return <Layout walletAddress={walletAddress} onConnect={handleConnect} onDisconnect={handleDisconnect} onNavigate={(v: any) => setCurrentView(v)} currentView={currentView}>{renderView()}</Layout>;
 };
 
 export default App;

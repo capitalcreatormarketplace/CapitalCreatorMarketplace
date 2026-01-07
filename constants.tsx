@@ -35,4 +35,7 @@ export const Icons = {
   Transact: ({ className = 'w-6 h-6' }: IconProps) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"/><path d="m15 9-6 6"/><path d="M13 9h2v2"/><path d="M9 15H7v-2"/></svg>
   ),
+  ChevronDown: ({ className = 'w-4 h-4' }: IconProps) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  ),
 };

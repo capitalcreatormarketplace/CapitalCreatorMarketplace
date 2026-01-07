@@ -93,30 +93,14 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 <input type="url" placeholder="https://..." className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.avatarUrl} onChange={e => setFormData({...formData, avatarUrl: e.target.value})} />
               </div>
             </div>
-            
-            {formData.role === UserRole.CREATOR && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4 border-t border-white/5">
-                <div className="space-y-2">
-                  <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Total Ad Revenue ($)</label>
-                  <input type="number" placeholder="0" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.revenueEarned} onChange={e => setFormData({...formData, revenueEarned: Number(e.target.value)})} required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Times Hired</label>
-                  <input type="number" placeholder="0" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.timesHired} onChange={e => setFormData({...formData, timesHired: Number(e.target.value)})} required />
-                </div>
-                 <div className="space-y-2">
-                  <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Avg Audience Size</label>
-                  <input type="number" placeholder="0" className="w-full bg-black/50 border border-white/10 p-4 text-base font-bold focus:border-white/40 outline-none" value={formData.avgAudienceSize} onChange={e => setFormData({...formData, avgAudienceSize: Number(e.target.value)})} required />
-                </div>
-              </div>
-            )}
 
-            <div className="space-y-2">
+            <div className="space-y-2 pt-4 border-t border-white/5">
                <label className="text-[7.9px] uppercase text-zinc-500 font-bold tracking-widest">Biography / Project Description</label>
               <textarea placeholder="Briefly describe your channel and audience demographics..." className="w-full bg-black/50 border border-white/10 p-4 min-h-[110px] text-sm focus:border-white/40 outline-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
             </div>
             <div className="flex justify-between items-center pt-5">
               <button 
+                type="button"
                 onClick={() => setFormData({...profile, role: UserRole.UNDEFINED})} 
                 className="text-[9.4px] uppercase tracking-[0.5em] text-zinc-500 hover:text-white transition-colors"
               >

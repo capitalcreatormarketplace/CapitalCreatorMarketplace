@@ -72,3 +72,18 @@ export async function connectWallet(): Promise<string | null> {
     return null;
   }
 }
+
+/**
+ * Disconnects from the user's Phantom wallet.
+ */
+export async function disconnectWallet(): Promise<void> {
+  const provider = getProvider();
+  if (provider) {
+    try {
+      await provider.disconnect();
+      console.log('Phantom Wallet disconnected.');
+    } catch (err) {
+      console.error('Wallet disconnection failed:', err);
+    }
+  }
+}

@@ -195,10 +195,10 @@ const App: React.FC = () => {
           <div className="py-24 md:py-32 text-center space-y-20 animate-fadeIn relative overflow-visible">
             <div className="space-y-4 max-w-[100vw] mx-auto px-4 overflow-hidden">
               <h1 className="flex flex-col uppercase text-center font-['Bebas_Neue'] tracking-[-0.02em] leading-[0.95]">
-                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.15rem,7.35vw,7.35rem)]">
+                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.04rem,6.98vw,6.98rem)]">
                   CREATOR REWARDS DONE RIGHT
                 </span>
-                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.15rem,7.35vw,7.35rem)] hover:brightness-125 transition-all duration-500 cursor-default">
+                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.04rem,6.98vw,6.98rem)] hover:brightness-125 transition-all duration-500 cursor-default">
                   MARKETING THAT ACTUALLY WORKS
                 </span>
               </h1>

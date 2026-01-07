@@ -10,6 +10,27 @@ export const TREASURY_WALLET = '3iWog8QKweF6iDNj6ujP9bDavvQ7Ra1f1wrGcaH9dWqC';
 export const PLATFORM_FEE_PERCENT = 0.10;
 
 export const Icons = {
+  Logo: ({ className = 'w-10 h-10' }: IconProps) => (
+    <img 
+      src="logo.png" 
+      alt="Capital Creator Logo" 
+      className={`${className} object-contain`}
+      onError={(e) => {
+        // Fallback styling if logo.png is missing in the local directory
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        const parent = target.parentElement;
+        if (parent && !parent.querySelector('.logo-fallback')) {
+          const fallback = document.createElement('div');
+          fallback.className = 'logo-fallback flex items-center justify-center font-black text-white bg-white/10 rounded-full border border-white/20';
+          fallback.style.width = '44px';
+          fallback.style.height = '44px';
+          fallback.innerText = '$';
+          parent.appendChild(fallback);
+        }
+      }}
+    />
+  ),
   Wallet: ({ className = 'w-5 h-5' }: IconProps) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><path d="M16 11h.01"/><path d="M22 10V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2"/><path d="M2 14v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2"/></svg>
   ),
@@ -25,7 +46,6 @@ export const Icons = {
   X: ({ className = 'w-4 h-4' }: IconProps) => (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
   ),
-  // New Icons for Homepage
   Connect: ({ className = 'w-6 h-6' }: IconProps) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
   ),

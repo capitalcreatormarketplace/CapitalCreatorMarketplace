@@ -91,9 +91,6 @@ const App: React.FC = () => {
 
   const handleDisconnect = async () => {
     await disconnectWallet();
-    // Forcing a page reload provides the most reliable way to ensure 
-    // the wallet's session state is completely cleared and requires a
-    // fresh connection prompt on the next attempt.
     window.location.reload();
   };
 
@@ -157,17 +154,14 @@ const App: React.FC = () => {
     try {
       const result = await processPayment(item.creatorAddress, item.priceSol);
       if (result.success) {
-        // Update creator metrics and mark item as sold
         setInventory(prevInventory => 
           prevInventory.map(inv => {
-            // Check if this inventory item belongs to the creator who just made a sale
             if (inv.creatorAddress === item.creatorAddress) {
               const updatedInv = {
                 ...inv,
                 creatorHires: (inv.creatorHires || 0) + 1,
                 creatorRevenue: (inv.creatorRevenue || 0) + item.priceSol,
               };
-              // Additionally, if this is the specific item that was sold, mark it as sold
               if (inv.id === item.id) {
                 updatedInv.sold = true;
               }
@@ -177,7 +171,6 @@ const App: React.FC = () => {
           })
         );
 
-        // If the current user's profile is the creator's, update their profile state as well
         if (profile && profile.address === item.creatorAddress) {
           setProfile(p => p ? {
             ...p,
@@ -200,9 +193,13 @@ const App: React.FC = () => {
     if (currentView === 'home') {
       return (
         <>
-          <div className="py-10 md:py-14 text-center space-y-9 animate-fadeIn relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-gradient-to-b from-transparent to-white/20"></div>
-            <div className="space-y-4 pt-4 max-w-[95vw] mx-auto overflow-hidden px-4">
+          <div className="py-14 md:py-20 text-center space-y-9 animate-fadeIn relative">
+            <div className="flex justify-center mb-4">
+              <div className="transition-all duration-700 hover:scale-105 drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:drop-shadow-[0_0_40px_rgba(255,255,255,0.45)]">
+                <Icons.Logo className="h-44 w-auto" />
+              </div>
+            </div>
+            <div className="space-y-4 max-w-[95vw] mx-auto overflow-hidden px-4">
               <h1 className="flex flex-col text-3xl md:text-5xl lg:text-[3.76rem] font-black uppercase tracking-tighter leading-[0.9] text-center">
                 <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap">CREATOR REWARDS DONE RIGHT</span>
                 <span className="text-zinc-600 transition-colors hover:text-zinc-400 duration-1000 whitespace-nowrap mt-2">MARKETING THAT ACTUALLY WORKS</span>

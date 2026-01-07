@@ -31,13 +31,13 @@ const Layout: React.FC<LayoutProps> = ({ children, walletAddress, onConnect, onD
     <div className="min-h-screen flex flex-col relative">
       <nav className="sticky top-0 z-50 glass border-b border-white/5 px-7 py-5 flex items-center justify-between">
         <div 
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-4 cursor-pointer group"
           onClick={() => onNavigate('home')}
         >
-          <div className="w-8 h-8 bg-white text-black flex items-center justify-center font-black text-base rounded-none group-hover:invert transition-all duration-500">
-            C
+          <div className="transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]">
+            <Icons.Logo className="h-11 w-auto" />
           </div>
-          <span className="text-base font-black tracking-tighter uppercase hidden sm:block">
+          <span className="text-base font-black uppercase tracking-tighter hidden sm:block">
             CAPITAL CREATOR
           </span>
         </div>

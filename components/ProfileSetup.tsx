@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 import { Icons } from '../constants';
 import { processPayment } from '../services/solana';
@@ -93,24 +93,21 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     setShowXOverlay(true);
     
     // Simulating X OAuth process
-    // We avoid actual redirection to prevent the real-world X error pages shown in user screenshots
-    console.log("Initializing X OAuth Handshake...");
-
-    // Simulate the OAuth callback/return logic where the VERIFIED IDENTITY is returned from X
+    // In a real environment, this redirects to X and returns a verified handle.
+    // We simulate the SUCCESSFUL return of 'VerifiedCreator' as per the user's screenshot.
     setTimeout(() => {
-      // The name returned by the "Authorized Service" (X)
-      const verifiedIdentity = "VerifiedCreator"; 
+      const verifiedHandle = "VerifiedCreator"; 
       
       setFormData({
         ...formData,
-        name: verifiedIdentity, // LOCK IN the name from the authorized session
+        name: verifiedHandle, // LOCK IN the verified name
         isXVerified: true,
-        xHandle: `@${verifiedIdentity.toLowerCase()}`,
-        channelLink: `https://x.com/${verifiedIdentity.toLowerCase()}`
+        xHandle: `@${verifiedHandle.toLowerCase()}`,
+        channelLink: `https://x.com/${verifiedHandle.toLowerCase()}`
       });
       setIsAuthorizingX(false);
       setShowXOverlay(false);
-    }, 3500);
+    }, 2800);
   };
 
   const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
@@ -203,16 +200,16 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     return (
       <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn relative">
         {showXOverlay && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-fadeIn">
-            <div className="text-center space-y-10 max-w-sm">
-              <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/98 backdrop-blur-2xl animate-fadeIn">
+            <div className="text-center space-y-12 max-w-sm">
+              <div className="relative w-32 h-32 mx-auto flex items-center justify-center">
                  <div className="absolute inset-0 border-2 border-white/5 rounded-full scale-110"></div>
                  <div className="absolute inset-0 border-t-2 border-[#1DA1F2] rounded-full animate-spin"></div>
-                 <Icons.X className="w-10 h-10 text-white animate-pulse" />
+                 <Icons.X className="w-12 h-12 text-white" />
               </div>
               <div className="space-y-4">
-                <h3 className="text-2xl font-black uppercase tracking-[0.2em] text-white">X Handshake Protocol</h3>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-[0.5em] leading-relaxed px-6">Establishing secure connection... <br/> Authenticating authorized identity metadata.</p>
+                <h3 className="text-2xl font-black uppercase tracking-[0.25em] text-white">AUTHENTICATING...</h3>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-[0.5em] leading-relaxed">Retrieving Identity Proof from X Terminal</p>
               </div>
             </div>
           </div>
@@ -220,7 +217,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
         <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#BF953F]/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#BF953F]/5 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="text-center space-y-2 relative z-10">
             <h2 className="text-4xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
@@ -273,13 +269,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">
-                      {formData.isXVerified ? 'Verified Identity (Locked)' : 'Brand Name'}
+                      {formData.isXVerified ? 'Verified Name (Locked)' : 'Brand Name'}
                     </label>
                     <input 
                       type="text" 
                       placeholder="e.g. ChartMaster" 
                       disabled={formData.isXVerified}
-                      className={`w-full bg-black/60 border p-5 text-base font-bold outline-none text-white transition-all ${formData.isXVerified ? 'border-[#1DA1F2]/60 opacity-90 cursor-not-allowed text-[#1DA1F2]' : 'border-white/10 focus:border-[#BF953F]'}`} 
+                      className={`w-full bg-black/60 border p-5 text-base font-bold outline-none transition-all ${formData.isXVerified ? 'border-[#1DA1F2]/40 text-[#1DA1F2] opacity-80 cursor-not-allowed' : 'border-white/10 focus:border-[#BF953F] text-white'}`} 
                       value={formData.name} 
                       onChange={e => setFormData({...formData, name: e.target.value})} 
                       required 
@@ -308,34 +304,47 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Identity Proof (Primary)</label>
                     {formData.isXVerified ? (
-                      <div className="w-full bg-[#1DA1F2]/10 border-2 border-[#1DA1F2] p-5 flex items-center justify-between group shadow-[0_0_20px_rgba(29,161,242,0.2)] transition-all relative overflow-hidden">
-                        <div className="absolute top-0 right-0 px-3 py-1 bg-[#1DA1F2] text-black font-black text-[8px] uppercase tracking-widest">IDENTITY VERIFIED</div>
-                        <div className="flex items-center gap-4">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)]"><Icons.Check className="w-7 h-7" /></div>
-                           <div>
-                             <p className="text-[10px] font-black uppercase tracking-widest text-[#1DA1F2]">Verified X Terminal</p>
-                             <p className="text-base font-black text-white">{formData.xHandle}</p>
+                      <div className="w-full bg-[#1DA1F2]/10 border-2 border-[#1DA1F2] p-5 pt-7 flex items-center justify-between group transition-all relative overflow-visible h-[100px]">
+                        {/* Verified Badge Header - Protruding like in user screenshot */}
+                        <div className="absolute -top-px right-[-1px] px-6 py-2 bg-[#1DA1F2] text-black font-black text-[10px] uppercase tracking-widest z-10">
+                          IDENTITY VERIFIED
+                        </div>
+                        
+                        <div className="flex items-center gap-5">
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.8)]">
+                              <Icons.Check className="w-8 h-8" strokeWidth={4} />
+                           </div>
+                           <div className="space-y-0.5">
+                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1DA1F2]">Verified X Terminal</p>
+                             <p className="text-2xl font-black text-white leading-none">{formData.xHandle}</p>
                            </div>
                         </div>
-                        <button type="button" onClick={() => setFormData({...formData, isXVerified: false, xHandle: '', name: ''})} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest z-10">Reset</button>
+                        
+                        <button 
+                          type="button" 
+                          onClick={() => setFormData({...formData, isXVerified: false, xHandle: '', name: ''})} 
+                          className="text-[11px] text-zinc-600 hover:text-white uppercase font-black tracking-widest transition-colors pr-2 mt-4"
+                        >
+                          RESET
+                        </button>
                       </div>
                     ) : (
                       <button 
                         type="button"
                         onClick={handleAuthorizeX}
                         disabled={isAuthorizingX}
-                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#1DA1F2] hover:bg-[#1DA1F2]/5 transition-all group overflow-hidden relative min-h-[70px]"
+                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#1DA1F2] hover:bg-[#1DA1F2]/5 transition-all group overflow-hidden relative min-h-[100px]"
                       >
                         {isAuthorizingX ? (
                           <div className="flex items-center gap-3 animate-pulse">
                             <div className="w-2 h-2 bg-[#1DA1F2] rounded-full"></div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Syncing Metadata...</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Connecting...</span>
                           </div>
                         ) : (
                           <>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                            <Icons.X className="w-5 h-5 text-white" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Authorize X to Prove Identity</span>
+                            <Icons.X className="w-6 h-6 text-white" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white">Authorize X to Prove Identity</span>
                           </>
                         )}
                       </button>
@@ -343,7 +352,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
-                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
+                    <select className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer h-[100px]" value={formData.niche || ContentCategory.CRYPTO} onChange={e => setFormData({...formData, niche: e.target.value})}>
                       {Object.values(ContentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
                     </select>
                   </div>

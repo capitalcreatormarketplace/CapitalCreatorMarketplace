@@ -33,7 +33,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     }
   );
 
-  // Auto-sync name when handle is verified
+  // Auto-sync and lock name when handle is verified
   useEffect(() => {
     if (verificationStep === 'VERIFIED' && formData.xHandle) {
       setFormData(prev => ({ ...prev, name: prev.xHandle?.toUpperCase() || '' }));
@@ -80,20 +80,37 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   };
 
   const startVerification = () => {
-    const cleanHandle = tempHandle.trim().replace('@', '');
+    const cleanHandle = tempHandle.trim().replace('@', '').toLowerCase();
     if (!cleanHandle) return alert("Enter your X handle first.");
     setTempHandle(cleanHandle);
     setVerificationStep('CHALLENGE');
   };
 
+  const extractHandleFromUrl = (url: string): string | null => {
+    try {
+      const u = new URL(url.startsWith('http') ? url : `https://${url}`);
+      const pathParts = u.pathname.split('/').filter(p => p);
+      if (pathParts.length > 0) return pathParts[0].toLowerCase();
+    } catch (e) {
+      return null;
+    }
+    return null;
+  };
+
   const handleVerifyNow = () => {
-    if (!tweetUrl.includes('x.com/') && !tweetUrl.includes('twitter.com/')) {
-      alert("Verification Failed: Please provide the URL to your X verification post.");
+    const urlHandle = extractHandleFromUrl(tweetUrl);
+    
+    if (!urlHandle) {
+      alert("Verification Failed: Invalid URL format.");
+      return;
+    }
+
+    if (urlHandle !== tempHandle) {
+      alert(`Verification Failed: The post belongs to @${urlHandle}, but you are trying to verify @${tempHandle}. Identity mismatch detected.`);
       return;
     }
     
     setVerificationStep('SCANNING');
-    // Simulate real API scraping/validation
     setTimeout(() => {
       const handleWithAt = `@${tempHandle}`;
       setFormData({
@@ -201,7 +218,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     </label>
                     <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/60 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
-                        <span className="text-3xl font-black uppercase tracking-tighter drop-shadow-[0_0_10px_rgba(29,161,242,0.3)] truncate">{formData.name}</span>
+                        <span className="text-4xl font-black uppercase tracking-tighter drop-shadow-[0_0_15px_rgba(29,161,242,0.4)] truncate">{formData.name}</span>
                       ) : (
                         <input 
                           type="text" 
@@ -250,7 +267,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       <div className="bg-black border border-[#1DA1F2]/20 p-5 space-y-4 animate-fadeIn">
                         <div className="space-y-1">
                            <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-[0.2em]">AUTHENTICATION PROTOCOL</p>
-                           <p className="text-[9px] text-white/40 leading-relaxed">Step 1: Post the code. Step 2: Paste the URL below.</p>
+                           <p className="text-[9px] text-white/40 leading-relaxed">Step 1: Post the code. Step 2: Paste the URL below. Handle MUST match.</p>
                         </div>
                         <div className="space-y-4">
                           <a 
@@ -265,12 +282,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                           <div className="space-y-2">
                              <input 
                                type="url" 
-                               placeholder="Paste Post URL here (x.com/yourname/status/...)"
+                               placeholder="Paste Post URL (x.com/yourname/status/...)"
                                className="w-full bg-black border border-white/10 p-3 text-[10px] text-white outline-none focus:border-[#1DA1F2] placeholder:text-zinc-800"
                                value={tweetUrl}
                                onChange={e => setTweetUrl(e.target.value)}
                              />
-                             <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-4 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">VALIDATE POST</button>
+                             <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-4 font-black uppercase text-[10px] tracking-widest hover:bg-[#1DA1F2] hover:text-white transition-all">VALIDATE IDENTITY</button>
                           </div>
                         </div>
                         <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[8px] text-zinc-700 hover:text-white uppercase font-black tracking-[0.4em] transition-colors text-center">Abort Verification</button>
@@ -283,13 +300,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         <div className="w-3/4 h-1 bg-white/5 relative overflow-hidden rounded-full">
                            <div className="absolute inset-0 bg-[#1DA1F2] w-1/4 animate-[scanning_1.5s_infinite] shadow-[0_0_15px_rgba(29,161,242,0.8)]"></div>
                         </div>
-                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] z-10">SCRAPING X TIMELINE...</p>
+                        <p className="text-[9px] text-[#1DA1F2] font-black uppercase tracking-[0.4em] z-10">SCRAPING X API FOR @{tempHandle}...</p>
                         <style>{`@keyframes scanning { 0% { left: -25% } 100% { left: 100% } }`}</style>
                       </div>
                     )}
 
                     {verificationStep === 'VERIFIED' && (
-                      <div className="w-full bg-black border border-[#1DA1F2] p-4 flex items-center justify-between group relative h-[75px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
+                      <div className="w-full bg-black border border-[#1DA1F2]/60 p-4 flex items-center justify-between group relative h-[75px] shadow-[0_0_20px_rgba(29,161,242,0.1)]">
                         {/* Blue Identity Box matching screenshot style */}
                         <div className="flex items-center gap-5">
                            <div className="text-[#1DA1F2] drop-shadow-[0_0_12px_rgba(29,161,242,0.7)]">
@@ -302,7 +319,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                         </div>
 
                         <div className="flex flex-col items-end justify-between h-full">
-                          <div className="absolute -top-[1px] -right-[1px] bg-[#1DA1F2] text-black px-4 py-2 font-black text-[9px] uppercase tracking-widest shadow-lg">
+                          <div className="absolute -top-[1px] -right-[1px] bg-[#1DA1F2] text-black px-4 py-2 font-black text-[9.5px] uppercase tracking-widest shadow-lg">
                             IDENTITY VERIFIED
                           </div>
                           <button 

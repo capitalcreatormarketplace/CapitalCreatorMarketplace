@@ -200,6 +200,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       <option value="X">X (Twitter)</option>
                       <option value="Kick">Kick</option>
                       <option value="TikTok">TikTok</option>
+                      <option value="PumpFun">PumpFun</option>
                       <option value="Instagram">Instagram</option>
                       <option value="Zora">Zora</option>
                       <option value="Other">Other</option>
@@ -331,7 +332,6 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                 </div>
 
-                {/* New Custom Calendar Picker Section */}
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">3. Select Broadcast Date (Next 7 Days)</label>

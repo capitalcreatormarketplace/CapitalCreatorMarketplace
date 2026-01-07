@@ -149,14 +149,43 @@ const App: React.FC = () => {
 
   const handlePurchase = async (item: InventoryItem) => {
     if (!walletAddress) {
-      handleConnect();
+      alert('Please connect your wallet to make a purchase.');
       return;
     }
+    
     setIsProcessing(true);
     try {
       const result = await processPayment(item.creatorAddress, item.priceSol);
       if (result.success) {
-        setInventory(prev => prev.map(inv => inv.id === item.id ? { ...inv, sold: true } : inv));
+        // Update creator metrics and mark item as sold
+        setInventory(prevInventory => 
+          prevInventory.map(inv => {
+            // Check if this inventory item belongs to the creator who just made a sale
+            if (inv.creatorAddress === item.creatorAddress) {
+              const updatedInv = {
+                ...inv,
+                creatorHires: (inv.creatorHires || 0) + 1,
+                creatorRevenue: (inv.creatorRevenue || 0) + item.priceSol,
+              };
+              // Additionally, if this is the specific item that was sold, mark it as sold
+              if (inv.id === item.id) {
+                updatedInv.sold = true;
+              }
+              return updatedInv;
+            }
+            return inv;
+          })
+        );
+
+        // If the current user's profile is the creator's, update their profile state as well
+        if (profile && profile.address === item.creatorAddress) {
+          setProfile(p => p ? {
+            ...p,
+            revenueEarned: (p.revenueEarned || 0) + item.priceSol,
+            timesHired: (p.timesHired || 0) + 1,
+          } : null);
+        }
+
         alert(`Purchase Successful!\nSignature: ${result.signature}\n90% routed to creator, 10% to treasury.`);
       }
     } catch (error) {

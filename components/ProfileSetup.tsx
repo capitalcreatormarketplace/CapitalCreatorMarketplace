@@ -45,11 +45,27 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const [selectedTime, setSelectedTime] = useState({
     hour: '12',
     minute: '00',
-    period: 'PM'
+    period: 'PM',
+    timezone: 'UTC'
   });
 
+  const timezones = [
+    { label: 'UTC', offset: 0 },
+    { label: 'EST (UTC-5)', offset: -5 },
+    { label: 'CST (UTC-6)', offset: -6 },
+    { label: 'MST (UTC-7)', offset: -7 },
+    { label: 'PST (UTC-8)', offset: -8 },
+    { label: 'GMT (UTC+0)', offset: 0 },
+    { label: 'CET (UTC+1)', offset: 1 },
+    { label: 'EET (UTC+2)', offset: 2 },
+    { label: 'MSK (UTC+3)', offset: 3 },
+    { label: 'IST (UTC+5.5)', offset: 5.5 },
+    { label: 'JST (UTC+9)', offset: 9 },
+    { label: 'AEDT (UTC+11)', offset: 11 },
+  ];
+
   const [invData, setInvData] = useState({
-    streamTime: '', // This will be calculated on submit
+    streamTime: '', 
     placementDetail: '',
     priceSol: 100, // USDC Default
     platform: 'YouTube' as const,
@@ -96,18 +112,23 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       return;
     }
 
-    // Construct final timestamp string
-    const d = availableDays[selectedDayIdx];
+    // Construct final timestamp adjusted for selected timezone
+    const d = new Date(availableDays[selectedDayIdx]);
     let hourNum = parseInt(selectedTime.hour);
     if (selectedTime.period === 'PM' && hourNum !== 12) hourNum += 12;
     if (selectedTime.period === 'AM' && hourNum === 12) hourNum = 0;
     
+    // Set components
     d.setHours(hourNum, parseInt(selectedTime.minute), 0, 0);
-    const finalStreamTime = d.toISOString();
+
+    // Apply offset adjustment to normalize to UTC
+    const tz = timezones.find(t => t.label === selectedTime.timezone) || timezones[0];
+    const utcTime = new Date(d.getTime() - (tz.offset * 60 * 60 * 1000));
+    
+    const finalStreamTime = utcTime.toISOString();
 
     setIsListing(true);
     try {
-      // Spam prevention: $0.01 USDC Fee
       const result = await processPayment(profile.address, 0.01);
       if (result.success) {
         onListInventory({ ...invData, streamTime: finalStreamTime });
@@ -353,29 +374,36 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">4. Select Event Start Time</label>
-                    <div className="flex gap-4">
+                    <label className="text-[10px] uppercase text-gray-500 font-black tracking-widest">4. Select Event Start Time & Zone</label>
+                    <div className="flex flex-wrap gap-4">
                       <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
                         value={selectedTime.hour}
                         onChange={e => setSelectedTime({...selectedTime, hour: e.target.value})}
                       >
                         {Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map(h => <option key={h} value={h}>{h}</option>)}
                       </select>
                       <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
                         value={selectedTime.minute}
                         onChange={e => setSelectedTime({...selectedTime, minute: e.target.value})}
                       >
                         {['00', '15', '30', '45'].map(m => <option key={m} value={m}>{m}</option>)}
                       </select>
                       <select 
-                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F]"
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-1 focus:border-[#BF953F] min-w-[80px]"
                         value={selectedTime.period}
                         onChange={e => setSelectedTime({...selectedTime, period: e.target.value})}
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
+                      </select>
+                      <select 
+                        className="bg-black/60 border border-white/10 p-4 text-white font-bold outline-none flex-[2] focus:border-[#BF953F] min-w-[150px]"
+                        value={selectedTime.timezone}
+                        onChange={e => setSelectedTime({...selectedTime, timezone: e.target.value})}
+                      >
+                        {timezones.map(tz => <option key={tz.label} value={tz.label}>{tz.label}</option>)}
                       </select>
                     </div>
                   </div>

@@ -124,7 +124,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
               <div className="space-y-3">
                 <span className="text-[9px] font-black text-zinc-600 tracking-[0.4em] uppercase border-l-2 border-white/20 pl-3">Platform</span>
                 <div className="flex flex-wrap gap-2">
-                  {['ALL', 'YOUTUBE', 'TWITCH', 'KICK', 'X', 'FACEBOOK', 'ZORA', 'PUMPFUN', 'RUMBLE', 'INSTAGRAM'].map(plt => (
+                  {['ALL', 'YOUTUBE', 'TWITCH', 'KICK', 'X', 'FACEBOOK', 'ZORA', 'PUMPFUN', 'RUMBLE', 'INSTAGRAM', 'DISCORD', 'OTHER'].map(plt => (
                     <FilterButton key={plt} label={plt} active={filterPlatform === plt} onClick={() => setFilterPlatform(plt)} />
                   ))}
                 </div>
@@ -246,7 +246,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
                   </div>
                </div>
                <div className="bg-black p-6 border-t border-white/5 flex items-center justify-around grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all">
-                  {['YOUTUBE', 'FACEBOOK', 'TWITCH', 'KICK', 'INSTAGRAM', 'ZORA'].map(p => (
+                  {['YOUTUBE', 'FACEBOOK', 'TWITCH', 'KICK', 'INSTAGRAM', 'ZORA', 'DISCORD'].map(p => (
                     <span key={p} className="text-[10px] font-black tracking-widest uppercase cursor-default">{p}</span>
                   ))}
                </div>

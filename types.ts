@@ -31,6 +31,8 @@ export interface UserProfile {
   // New Brand/Creator Fields
   platforms?: string[]; // Array for multi-platform support
   channelLink?: string;
+  xHandle?: string;      // New field for verified X handle
+  isXVerified?: boolean; // New field for verification status
   niche?: string;
   timezone?: string;
   schedule?: string;

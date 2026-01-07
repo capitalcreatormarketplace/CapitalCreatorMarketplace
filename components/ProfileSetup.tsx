@@ -12,12 +12,13 @@ interface ProfileSetupProps {
   onListInventory: (item: any) => void;
 }
 
-const PLATFORM_OPTIONS = ['YouTube', 'Twitch', 'Facebook', 'X', 'Kick', 'Zora', 'PumpFun', 'Rumble', 'Instagram', 'TikTok'];
+const PLATFORM_OPTIONS = ['YouTube', 'Twitch', 'Facebook', 'X', 'Kick', 'Zora', 'PumpFun', 'Rumble', 'Instagram', 'TikTok', 'Discord', 'Other'];
 
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isListing, setIsListing] = useState(false);
+  const [isAuthorizingX, setIsAuthorizingX] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamImgRef = useRef<HTMLInputElement>(null);
@@ -70,7 +71,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     streamTime: '', 
     placementDetail: '',
     priceSol: 100, 
-    platforms: [] as string[], // Changed to array
+    platforms: [] as string[],
     category: ContentCategory.CRYPTO,
     adPosition: 'bottom-right' as AdPosition,
     streamPreviewUrl: ''
@@ -78,8 +79,30 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.isXVerified) {
+      alert("Please authorize your X account to prove your identity first.");
+      return;
+    }
     onSaveProfile(formData);
     setIsEditing(false);
+  };
+
+  const handleAuthorizeX = () => {
+    if (!formData.name) {
+      alert("Please enter a brand name first.");
+      return;
+    }
+    setIsAuthorizingX(true);
+    // Simulate API delay for futuristic feel
+    setTimeout(() => {
+      setFormData({
+        ...formData,
+        isXVerified: true,
+        xHandle: `@${formData.name.replace(/\s+/g, '').toLowerCase()}`,
+        channelLink: `https://x.com/${formData.name.replace(/\s+/g, '').toLowerCase()}`
+      });
+      setIsAuthorizingX(false);
+    }, 2000);
   };
 
   const handleTogglePlatform = (p: string, isProfile: boolean = false) => {
@@ -249,8 +272,39 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
-                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Primary Channel Link</label>
-                    <input type="url" placeholder="https://..." className="w-full bg-black/60 border border-white/10 p-5 text-base font-bold focus:border-[#BF953F] outline-none text-white transition-all" value={formData.channelLink} onChange={e => setFormData({...formData, channelLink: e.target.value})} required />
+                    <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Identity Proof (Primary)</label>
+                    {formData.isXVerified ? (
+                      <div className="w-full bg-[#BF953F]/10 border-2 border-[#BF953F] p-5 flex items-center justify-between group shadow-[0_0_20px_rgba(191,149,63,0.15)] transition-all">
+                        <div className="flex items-center gap-4">
+                           <div className="text-[#BF953F]"><Icons.Check className="w-6 h-6" /></div>
+                           <div>
+                             <p className="text-[10px] font-black uppercase tracking-widest text-[#BF953F]">X Verified Identity</p>
+                             <p className="text-base font-black text-white">{formData.xHandle}</p>
+                           </div>
+                        </div>
+                        <button type="button" onClick={() => setFormData({...formData, isXVerified: false, xHandle: ''})} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest">Reset</button>
+                      </div>
+                    ) : (
+                      <button 
+                        type="button"
+                        onClick={handleAuthorizeX}
+                        disabled={isAuthorizingX}
+                        className="w-full bg-black border-2 border-white/10 p-5 flex items-center justify-center gap-4 hover:border-[#BF953F] hover:bg-[#BF953F]/5 transition-all group overflow-hidden relative"
+                      >
+                        {isAuthorizingX ? (
+                          <div className="flex items-center gap-3 animate-pulse">
+                            <div className="w-2 h-2 bg-[#BF953F] rounded-full"></div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Authenticating with X Terminal...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <Icons.X className="w-5 h-5 text-white" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Authorize X to Prove Identity</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-bold tracking-widest">Category / Niche</label>
@@ -290,7 +344,14 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row items-center justify-between border-b border-white/5 pb-8 gap-6">
                 <div>
-                  <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">{profile.name}</h2>
+                  <div className="flex items-center justify-center md:justify-start gap-3">
+                    <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">{profile.name}</h2>
+                    {profile.isXVerified && (
+                      <div className="text-[#BF953F] flex items-center" title="X Verified Identity">
+                        <Icons.Check className="w-8 h-8 drop-shadow-[0_0_10px_rgba(191,149,63,0.5)]" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-4">
                     <p className="mono text-[9px] opacity-40 uppercase tracking-[0.3em] font-bold">{profile.address}</p>
                     <div className="flex flex-wrap gap-2">

@@ -82,7 +82,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
       const handleWithAt = tempHandle.startsWith('@') ? tempHandle : `@${tempHandle}`;
       setFormData({
         ...formData,
-        name: handleWithAt,
+        name: handleWithAt.toUpperCase(),
         isXVerified: true,
         xHandle: handleWithAt,
         channelLink: `https://x.com/${tempHandle.replace('@', '')}`
@@ -156,8 +156,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   if (isEditing || !profile.name) {
     return (
       <div className="max-w-4xl mx-auto py-12 md:py-20 animate-fadeIn relative">
-        <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-12 relative overflow-hidden">
-          <div className="text-center space-y-2 relative z-10">
+        <div className="glass p-8 md:p-12 rounded-none border-white/20 animate-fadeIn space-y-10 relative overflow-hidden">
+          <div className="text-center space-y-2 relative z-10 mb-6">
             <h2 className="text-3xl font-black uppercase tracking-tighter text-white">System Initialization</h2>
             <p className="text-[#BF953F] font-bold uppercase tracking-[0.5em] text-[10px]">Configure your Terminal Profile</p>
           </div>
@@ -176,12 +176,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
           ) : (
             <form onSubmit={handleProfileSubmit} className="space-y-10 relative z-10">
               <div className="flex flex-col items-center gap-4">
-                <div onClick={handleAvatarClick} className="relative w-28 h-28 rounded-full border-2 border-[#BF953F]/40 flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40">
+                <div onClick={handleAvatarClick} className="relative w-24 h-24 rounded-full border-2 border-[#BF953F]/40 flex items-center justify-center cursor-pointer group hover:bg-[#BF953F]/10 transition-all overflow-hidden bg-black/40">
                   {formData.avatarUrl ? (
                     <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center">
-                      <Icons.Plus className="w-6 h-6 text-[#BF953F] mx-auto mb-1" />
+                      <Icons.Plus className="w-5 h-5 text-[#BF953F] mx-auto mb-1" />
                       <span className="text-[8px] font-black uppercase tracking-widest text-[#BF953F]">Logo</span>
                     </div>
                   )}
@@ -195,7 +195,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">
                       {verificationStep === 'VERIFIED' ? 'VERIFIED ACCOUNT (LOCKED)' : 'BRAND NAME'}
                     </label>
-                    <div className={`w-full bg-black border p-4 h-[75px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/30 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
+                    <div className={`w-full bg-black border p-4 h-[65px] flex items-center transition-all ${verificationStep === 'VERIFIED' ? 'border-[#1DA1F2]/30 text-[#1DA1F2]' : 'border-white/10 focus-within:border-[#BF953F]'}`}>
                       {verificationStep === 'VERIFIED' ? (
                         <span className="text-xl font-black uppercase tracking-tighter">{formData.name}</span>
                       ) : (
@@ -212,7 +212,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">BROADCAST CLUSTER</label>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-1.5 h-[65px]">
                       {PLATFORM_OPTIONS.slice(0, 6).map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
@@ -225,13 +225,12 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                   </div>
                 </div>
 
-                {/* THE SIDE-BY-SIDE VERIFICATION & NICHE BOXES */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">IDENTITY PROOF (PRIMARY)</label>
                     
                     {verificationStep === 'IDLE' && (
-                      <div className="flex gap-1 h-[80px]">
+                      <div className="flex gap-1 h-[75px]">
                         <input 
                           type="text" 
                           placeholder="@XHandle" 
@@ -244,19 +243,25 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     )}
 
                     {verificationStep === 'CHALLENGE' && (
-                      <div className="bg-[#050505] border border-[#1DA1F2]/20 p-4 space-y-4 h-[auto]">
-                        <p className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">Post to X:</p>
-                        <div className="bg-black p-3 border border-dashed border-[#1DA1F2]/40 text-center">
-                          <code className="text-[#1DA1F2] font-black text-lg tracking-[0.1em]">{verifyCode}</code>
+                      <div className="bg-black border border-[#1DA1F2]/20 p-4 space-y-4 animate-fadeIn">
+                        <div className="flex items-center justify-between">
+                           <p className="text-[8.5px] text-zinc-500 uppercase font-black tracking-widest">POST TO X:</p>
                         </div>
-                        <div className="flex gap-2">
-                          <button type="button" onClick={handleVerifyNow} className="flex-grow bg-white text-black py-3 font-black uppercase text-[9px] tracking-widest">I'VE POSTED</button>
-                        </div>
+                        <a 
+                          href={`https://x.com/intent/tweet?text=Verifying my account for @CapitalCreator0: ${verifyCode}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block bg-[#080a0c] p-3 border border-dashed border-[#1DA1F2]/40 text-center hover:bg-[#1DA1F2]/5 transition-all group"
+                        >
+                          <code className="text-[#1DA1F2] font-black text-xl tracking-[0.1em] group-hover:brightness-125">{verifyCode}</code>
+                        </a>
+                        <button type="button" onClick={handleVerifyNow} className="w-full bg-white text-black py-3.5 font-black uppercase text-[10px] tracking-widest hover:bg-zinc-200 transition-all">I'VE POSTED</button>
+                        <button type="button" onClick={() => setVerificationStep('IDLE')} className="w-full text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest transition-colors">Cancel</button>
                       </div>
                     )}
 
                     {verificationStep === 'SCANNING' && (
-                      <div className="w-full bg-black border border-[#1DA1F2]/10 p-6 flex flex-col items-center justify-center space-y-4 h-[80px]">
+                      <div className="w-full bg-black border border-[#1DA1F2]/10 p-6 flex flex-col items-center justify-center space-y-4 h-[75px]">
                         <div className="w-1/2 h-0.5 bg-white/5 relative overflow-hidden">
                            <div className="absolute inset-0 bg-[#1DA1F2] w-1/3 animate-[scanning_1.2s_infinite]"></div>
                         </div>
@@ -266,26 +271,25 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                     )}
 
                     {verificationStep === 'VERIFIED' && (
-                      <div className="w-full bg-[#050505] border border-[#1DA1F2] p-4 pt-8 flex items-center justify-between group relative h-[80px]">
-                        {/* TAB TOP RIGHT */}
-                        <div className="absolute -top-[1px] -right-[1px] px-5 py-2 bg-[#1DA1F2] text-black font-black text-[9px] uppercase tracking-[0.05em] z-10 shadow-md">
+                      <div className="w-full bg-black border border-[#1DA1F2] p-4 pt-8 flex items-center justify-between group relative h-[75px] shadow-[inset_0_0_15px_rgba(29,161,242,0.05)]">
+                        <div className="absolute -top-[1px] -right-[1px] px-5 py-2.5 bg-[#1DA1F2] text-black font-black text-[9.5px] uppercase tracking-[0.05em] z-10 shadow-md">
                           IDENTITY VERIFIED
                         </div>
                         
                         <div className="flex items-center gap-4">
-                           <div className="text-[#1DA1F2] drop-shadow-[0_0_10px_rgba(29,161,242,0.6)]">
-                              <Icons.Check className="w-8 h-8" strokeWidth={5} />
+                           <div className="text-[#1DA1F2] drop-shadow-[0_0_8px_rgba(29,161,242,0.5)]">
+                              <Icons.Check className="w-9 h-9" strokeWidth={5} />
                            </div>
                            <div className="space-y-0.5">
                              <p className="text-[8px] font-black uppercase tracking-[0.1em] text-[#1DA1F2] opacity-70">VERIFIED TERMINAL</p>
-                             <p className="text-xl md:text-2xl font-black text-white leading-none tracking-tighter">{formData.xHandle}</p>
+                             <p className="text-2xl font-black text-white leading-none tracking-tighter">{formData.xHandle}</p>
                            </div>
                         </div>
                         
                         <button 
                           type="button" 
                           onClick={() => { setVerificationStep('IDLE'); setFormData({...formData, isXVerified: false, xHandle: '', name: ''}); }} 
-                          className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest mt-6"
+                          className="text-[9px] text-zinc-700 hover:text-white uppercase font-black tracking-widest mt-5"
                         >
                           RESET
                         </button>
@@ -295,9 +299,9 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
                   <div className="space-y-3">
                     <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">CATEGORY / NICHE</label>
-                    <div className="relative h-[80px]">
+                    <div className="relative h-[75px]">
                       <select 
-                        className="w-full h-full bg-black border border-white/5 p-4 text-xl font-black uppercase tracking-tighter focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer" 
+                        className="w-full h-full bg-black border border-white/5 p-4 text-3xl font-black uppercase tracking-tighter focus:border-[#BF953F] outline-none text-white appearance-none cursor-pointer text-center" 
                         value={formData.niche || ContentCategory.CRYPTO} 
                         onChange={e => setFormData({...formData, niche: e.target.value})}
                       >
@@ -312,7 +316,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
                 <div className="space-y-3 pt-2">
                   <label className="text-[8.5px] uppercase text-zinc-500 font-black tracking-[0.2em]">PROJECT DIRECTIVE</label>
-                  <textarea placeholder="Briefly describe your audience demographics..." className="w-full bg-black border border-white/10 p-5 min-h-[120px] text-[13px] font-medium focus:border-[#BF953F] outline-none text-zinc-400 transition-all resize-none leading-relaxed" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
+                  <textarea placeholder="Briefly describe your audience demographics..." className="w-full bg-black border border-white/10 p-5 min-h-[110px] text-[13px] font-medium focus:border-[#BF953F] outline-none text-zinc-400 transition-all resize-none leading-relaxed" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} required />
                 </div>
                 
                 <div className="flex justify-between items-center pt-8 border-t border-white/5">

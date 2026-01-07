@@ -5,6 +5,7 @@ import { TransactionResult } from '../types';
 // --- Type Definition for the Phantom Wallet Provider ---
 interface PhantomProvider {
   isPhantom: boolean;
+  isConnected: boolean;
   connect: (options?: { onlyIfTrusted: boolean }) => Promise<{ publicKey: { toString: () => string } }>;
   disconnect: () => Promise<void>;
   // Additional properties can be added here as needed
@@ -51,18 +52,23 @@ export async function processPayment(
 
 /**
  * Connects to the user's Phantom wallet.
+ * This function will ALWAYS prompt the user for connection approval.
  * @returns The wallet's public key as a string, or null if connection fails.
  */
 export async function connectWallet(): Promise<string | null> {
   const provider = getProvider();
   if (provider) {
     try {
-      const response = await provider.connect();
+      // By explicitly setting `onlyIfTrusted: false`, we ensure that the wallet
+      // MUST prompt the user for connection, preventing silent auto-connections.
+      // This is a critical security measure to respect user intent.
+      const response = await provider.connect({ onlyIfTrusted: false });
       const publicKey = response.publicKey.toString();
       console.log('Phantom Wallet connected:', publicKey);
       return publicKey;
     } catch (err) {
-      console.error('Wallet connection failed:', err);
+      // This catch block will handle cases where the user rejects the connection prompt.
+      console.error('Wallet connection rejected or failed:', err);
       return null;
     }
   } else {
@@ -78,7 +84,8 @@ export async function connectWallet(): Promise<string | null> {
  */
 export async function disconnectWallet(): Promise<void> {
   const provider = getProvider();
-  if (provider) {
+  // Ensure we only attempt to disconnect if a provider exists and is connected.
+  if (provider?.isConnected) {
     try {
       await provider.disconnect();
       console.log('Phantom Wallet disconnected.');

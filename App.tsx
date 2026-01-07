@@ -196,10 +196,11 @@ const App: React.FC = () => {
           <div className="py-24 md:py-32 text-center space-y-20 animate-fadeIn relative overflow-visible">
             <div className="space-y-4 max-w-[100vw] mx-auto px-4 overflow-hidden">
               <h1 className="flex flex-col uppercase text-center font-['Bebas_Neue'] tracking-[-0.02em] leading-[0.95]">
-                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.5rem,8.5vw,8.5rem)]">
+                {/* Reduced font size by 2% from clamp(2.5rem, 8.5vw, 8.5rem) to clamp(2.45rem, 8.33vw, 8.33rem) */}
+                <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] text-[clamp(2.45rem,8.33vw,8.33rem)]">
                   CREATOR REWARDS DONE RIGHT
                 </span>
-                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.5rem,8.5vw,8.5rem)] hover:brightness-125 transition-all duration-500 cursor-default">
+                <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(212,175,55,0.4)] mt-2 text-[clamp(2.45rem,8.33vw,8.33rem)] hover:brightness-125 transition-all duration-500 cursor-default">
                   MARKETING THAT ACTUALLY WORKS
                 </span>
               </h1>
@@ -209,11 +210,6 @@ const App: React.FC = () => {
               <button onClick={() => setCurrentView('marketplace')} className="group relative bg-white text-black px-20 py-8 font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all duration-500 text-[1rem] overflow-hidden border border-white">
                 <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-black group-hover:border-white m-1"></div>
                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-black group-hover:border-white m-1"></div>
-                {/* 
-                  Gold Styled Marketplace only inside the button:
-                  - Used a high-contrast version of the gold gradient 
-                  - Ensures it's legible on both white (initial) and black (hover)
-                */}
                 ENTER <span className="bg-gradient-to-r from-[#BF953F] via-[#B38728] to-[#8A6E2F] bg-clip-text text-transparent inline-block drop-shadow-[0_0_1px_rgba(0,0,0,0.2)]">MARKETPLACE</span>
               </button>
             </div>

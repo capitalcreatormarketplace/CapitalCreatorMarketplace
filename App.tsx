@@ -91,10 +91,10 @@ const App: React.FC = () => {
 
   const handleDisconnect = async () => {
     await disconnectWallet();
-    setWalletAddress(null);
-    setProfile(null);
-    setSponsorApp(undefined);
-    setCurrentView('home');
+    // Forcing a page reload provides the most reliable way to ensure 
+    // the wallet's session state is completely cleared and requires a
+    // fresh connection prompt on the next attempt.
+    window.location.reload();
   };
 
   const handleSaveProfile = (updatedProfile: UserProfile) => {

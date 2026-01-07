@@ -125,10 +125,16 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     }, 4500);
   };
 
-  const handleTogglePlatform = (p: string) => {
+  const handleToggleProfilePlatform = (p: string) => {
     const current = formData.platforms || [];
     const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
     setFormData({...formData, platforms: updated});
+  };
+
+  const handleToggleInventoryPlatform = (p: string) => {
+    const current = invData.platforms || [];
+    const updated = current.includes(p) ? current.filter(x => x !== p) : [...current, p];
+    setInvData({...invData, platforms: updated});
   };
 
   const handleAvatarClick = () => fileInputRef.current?.click();
@@ -152,7 +158,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
   const handleListSubmit = async () => {
     if (!invData.streamPreviewUrl) return alert("Please upload a stream preview image first.");
-    if (invData.platforms.length === 0) return alert("Please select at least one broadcast host.");
+    if (invData.platforms.length === 0) return alert("Please select at least one streaming platform.");
     const d = new Date(availableDays[selectedDayIdx]);
     let hourNum = parseInt(selectedTime.hour);
     if (selectedTime.period === 'PM' && hourNum !== 12) hourNum += 12;
@@ -244,7 +250,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       {PLATFORM_OPTIONS.map(p => {
                         const isSel = (formData.platforms || []).includes(p);
                         return (
-                          <button key={p} type="button" onClick={() => handleTogglePlatform(p)} className={`p-1 border text-[7px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-white text-black border-white shadow-[0_0_8px_rgba(255,255,255,0.2)]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
+                          <button key={p} type="button" onClick={() => handleToggleProfilePlatform(p)} className={`p-1 border text-[7px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-white text-black border-white shadow-[0_0_8px_rgba(255,255,255,0.2)]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}>
                             {p}
                           </button>
                         );
@@ -433,6 +439,26 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
                       <li className="flex justify-between"><span>Listing Fee</span> <span className="text-[#BF953F]">$0.01 USDC</span></li>
                       <li className="flex justify-between"><span>Creator Cut</span> <span className="text-white">90%</span></li>
                     </ul>
+                  </div>
+                </div>
+
+                {/* Streaming Platform Selection Cluster */}
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase text-zinc-600 font-black tracking-widest">Streaming Platform</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {PLATFORM_OPTIONS.map(p => {
+                      const isSel = (invData.platforms || []).includes(p);
+                      return (
+                        <button 
+                          key={p} 
+                          type="button" 
+                          onClick={() => handleToggleInventoryPlatform(p)} 
+                          className={`p-1.5 border text-[7.5px] font-black uppercase tracking-widest transition-all ${isSel ? 'bg-white text-black border-white shadow-[0_0_8px_rgba(255,255,255,0.2)]' : 'bg-black text-zinc-600 border-white/5 hover:border-white/20'}`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

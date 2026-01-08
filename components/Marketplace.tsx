@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { InventoryItem, SponsorStatus, AdPosition, ContentCategory } from '../types';
+import { InventoryItem, SponsorStatus, AdPosition, ContentCategory, ItemStatus } from '../types';
 
 interface MarketplaceProps {
   items: InventoryItem[];
@@ -32,6 +32,7 @@ const AdBadge: React.FC<{ position: AdPosition; isPreview?: boolean }> = ({ posi
 const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurchase, loading }) => {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showEnded, setShowEnded] = useState(false);
   
   const [filterCategory, setFilterCategory] = useState<string>('ALL');
   const [filterPlatform, setFilterPlatform] = useState<string>('ALL');
@@ -40,6 +41,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
+      // Primary filter: Active vs. Ended
+      const isEnded = item.status === ItemStatus.SOLD || item.status === ItemStatus.EXPIRED;
+      if (showEnded !== isEnded) {
+        return false;
+      }
+
+      // Secondary filters from modal
       const date = new Date(item.timestamp);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
       const hour = date.getHours();
@@ -56,7 +64,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
 
       return matchesCategory && matchesPlatform && matchesDay && matchesTime;
     });
-  }, [items, filterCategory, filterPlatform, filterDay, filterTime]);
+  }, [items, filterCategory, filterPlatform, filterDay, filterTime, showEnded]);
 
   const FilterButton: React.FC<{ label: string, active: boolean, onClick: () => void }> = ({ label, active, onClick }) => (
     <button 
@@ -84,20 +92,32 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
           BUY CONTENT AD PLACEMENTS
         </p>
 
-        <div className="pt-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 max-w-4xl mx-auto">
           <button 
             onClick={() => setIsFilterOpen(true)}
-            className="group relative inline-flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-3 hover:bg-white hover:text-black transition-all duration-300"
+            className="group relative inline-flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-3 hover:border-white/20 transition-all duration-300"
           >
-            <span className="text-[10px] font-black tracking-[0.3em] uppercase">Open Filter Terminal</span>
+            <span className="text-[9px] font-black tracking-[0.3em] uppercase">Filter Terminal</span>
             {activeFilterCount > 0 && (
-              <span className="bg-white text-black px-2 py-0.5 text-[8px] font-black rounded-none group-hover:bg-black group-hover:text-white">
-                {activeFilterCount} ACTIVE
+              <span className="bg-white text-black px-2 py-0.5 text-[8px] font-black">
+                {activeFilterCount}
               </span>
             )}
-            <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-white/40"></div>
-            <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l border-white/40"></div>
           </button>
+          <div className="flex gap-2 p-1 bg-black/40 border border-white/5">
+            <button
+              onClick={() => setShowEnded(false)}
+              className={`px-6 py-2 text-[9px] font-black tracking-widest uppercase transition-all ${!showEnded ? 'bg-white text-black shadow-lg' : 'text-zinc-600 hover:text-white'}`}
+            >
+              Active Spots
+            </button>
+            <button
+              onClick={() => setShowEnded(true)}
+              className={`px-6 py-2 text-[9px] font-black tracking-widest uppercase transition-all ${showEnded ? 'bg-white text-black shadow-lg' : 'text-zinc-600 hover:text-white'}`}
+            >
+              Ended
+            </button>
+          </div>
         </div>
       </div>
 
@@ -164,16 +184,21 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-14">
           {filteredItems.map((item) => (
-            <div key={item.id} className={`group cursor-pointer transition-all ${item.sold ? 'opacity-40 grayscale' : 'hover:opacity-90'}`} onClick={() => !item.sold && setSelectedItem(item)}>
+            <div key={item.id} className={`group transition-all ${item.status !== ItemStatus.AVAILABLE ? 'opacity-40 grayscale' : 'hover:opacity-90 cursor-pointer'}`} onClick={() => item.status === ItemStatus.AVAILABLE && setSelectedItem(item)}>
               <div className="relative aspect-video bg-zinc-900 overflow-hidden border border-white/5">
                 <img src={item.thumbnailUrl} alt={item.placementDetail} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500" />
                 <AdBadge position={item.adPosition} />
-                {item.sold && (
+                {item.status === ItemStatus.SOLD && (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
                     <span className="text-white font-black text-xl uppercase tracking-widest border border-white px-4 py-1">SOLD</span>
                   </div>
                 )}
-                {!item.sold && (
+                {item.status === ItemStatus.EXPIRED && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
+                    <span className="text-zinc-500 font-black text-xl uppercase tracking-widest border border-zinc-700 px-4 py-1">ENDED</span>
+                  </div>
+                )}
+                {item.status === ItemStatus.AVAILABLE && (
                   <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                     <div className="bg-white text-black px-5 py-2 font-bold uppercase text-[7.5px] tracking-[0.2em]">VIEW DETAILS</div>
                   </div>

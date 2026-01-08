@@ -52,6 +52,12 @@ export interface SponsorApplication {
 
 export type AdPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 
+export enum ItemStatus {
+  AVAILABLE = 'AVAILABLE',
+  SOLD = 'SOLD',
+  EXPIRED = 'EXPIRED',
+}
+
 export interface InventoryItem {
   id: string;
   creatorAddress: string;
@@ -60,7 +66,7 @@ export interface InventoryItem {
   timestamp: number;   // For filtering logic
   placementDetail: string;
   priceSol: number; 
-  sold: boolean;
+  status: ItemStatus;
   platforms: string[]; // Array for multi-platform support
   category: ContentCategory;
   thumbnailUrl: string;

@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import Marketplace from './components/Marketplace';
 import ProfileSetup from './components/ProfileSetup';
-import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory } from './types';
+import { UserProfile, UserRole, InventoryItem, SponsorApplication, SponsorStatus, ContentCategory, ItemStatus } from './types';
 import { connectWallet, processPayment, disconnectWallet } from './services/solana';
 // Fix: Import Icons from constants to provide access to navigation and step icons
 import { Icons } from './constants';
@@ -17,7 +17,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     timestamp: new Date('2026-07-13T14:00:00').getTime(),
     placementDetail: 'High Alpha Crypto Podcast Spot. We integrate your logo directly into the stream feed with a pinned link in live chat. Audience is 90% male, interested in high-risk DeFi assets.',
     priceSol: 450,
-    sold: false,
+    status: ItemStatus.AVAILABLE,
     platforms: ['YouTube', 'X'],
     category: ContentCategory.CRYPTO,
     thumbnailUrl: 'https://images.unsplash.com/photo-1640340434855-6084b1f4901c?q=80&w=800&auto=format&fit=crop',
@@ -34,7 +34,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     timestamp: new Date('2026-07-14T18:00:00').getTime(),
     placementDetail: 'Premium Overlay Placement on 4K Stream. Your brand will be featured during competitive play sessions. Guaranteed shoutouts every 30 minutes.',
     priceSol: 1200,
-    sold: false,
+    status: ItemStatus.AVAILABLE,
     platforms: ['Twitch', 'YouTube', 'Kick'],
     category: ContentCategory.GAMING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1593340073024-d0f91373ec36?q=80&w=800&auto=format&fit=crop',
@@ -51,7 +51,7 @@ const INITIAL_ITEMS: InventoryItem[] = [
     timestamp: new Date('2026-07-15T13:00:00').getTime(),
     placementDetail: 'Mid Roll Shoutout and Dynamic Banner. I discuss community news and interact with viewers personally. High trust factor with audience.',
     priceSol: 820,
-    sold: false,
+    status: ItemStatus.AVAILABLE,
     platforms: ['Kick', 'X'],
     category: ContentCategory.JUST_CHATTING,
     thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop',
@@ -59,6 +59,38 @@ const INITIAL_ITEMS: InventoryItem[] = [
     creatorRevenue: 34000,
     creatorHires: 28,
     creatorAvgAudience: 22000
+  },
+  {
+    id: 'inv_4_sold',
+    creatorAddress: '5z1m...',
+    creatorName: 'PAST SUCCESS',
+    streamTime: 'July 1st 12:00 PM',
+    timestamp: new Date().getTime() - (5 * 24 * 60 * 60 * 1000), // 5 days ago
+    placementDetail: 'This spot was sold and successfully executed last week.',
+    priceSol: 500,
+    status: ItemStatus.SOLD,
+    platforms: ['Twitch'],
+    category: ContentCategory.FINANCE,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1554260570-e9689a3418b8?q=80&w=800&auto=format&fit=crop',
+    adPosition: 'top-left',
+    creatorHires: 1,
+    creatorAvgAudience: 10000,
+  },
+  {
+    id: 'inv_5_expired',
+    creatorAddress: '9a3b...',
+    creatorName: 'MISSED OPPORTUNITY',
+    streamTime: 'Yesterday 4:00 PM',
+    timestamp: new Date().getTime() - 86400000, // Yesterday
+    placementDetail: 'This spot was available but the stream time has passed.',
+    priceSol: 300,
+    status: ItemStatus.AVAILABLE, // Will be updated to EXPIRED by useEffect
+    platforms: ['Rumble'],
+    category: ContentCategory.TECH,
+    thumbnailUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop',
+    adPosition: 'bottom-center',
+    creatorHires: 0,
+    creatorAvgAudience: 5000,
   }
 ];
 
@@ -69,6 +101,23 @@ const App: React.FC = () => {
   const [sponsorApp, setSponsorApp] = useState<SponsorApplication | undefined>();
   const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_ITEMS);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    const checkExpiredItems = () => {
+      const now = Date.now();
+      setInventory(prev =>
+        prev.map(item =>
+          item.status === ItemStatus.AVAILABLE && item.timestamp < now
+            ? { ...item, status: ItemStatus.EXPIRED }
+            : item
+        )
+      );
+    };
+
+    checkExpiredItems(); // Initial check
+    const intervalId = setInterval(checkExpiredItems, 60000); // Check every minute
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleConnect = async () => {
     const addr = await connectWallet();
@@ -128,7 +177,7 @@ const App: React.FC = () => {
       timestamp: dateObj.getTime(),
       placementDetail: data.placementDetail,
       priceSol: data.priceSol,
-      sold: false,
+      status: ItemStatus.AVAILABLE,
       platforms: data.platforms || [],
       category: data.category,
       thumbnailUrl: data.streamPreviewUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=800&auto=format&fit=crop',
@@ -162,7 +211,7 @@ const App: React.FC = () => {
                 creatorRevenue: (inv.creatorRevenue || 0) + item.priceSol,
               };
               if (inv.id === item.id) {
-                updatedInv.sold = true;
+                updatedInv.status = ItemStatus.SOLD;
               }
               return updatedInv;
             }

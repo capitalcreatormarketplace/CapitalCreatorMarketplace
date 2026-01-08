@@ -50,15 +50,17 @@ const Layout: React.FC<LayoutProps> = ({ children, onNavigate, currentView }) =>
              </button>
            )}
 
-          <WalletMultiButton style={{ 
-            height: '38px', 
-            backgroundColor: 'rgba(255,255,255,0.05)', 
-            border: '1px solid rgba(255,255,255,0.1)',
-            fontSize: '10px',
-            textTransform: 'uppercase',
-            fontWeight: 800,
-            letterSpacing: '0.2em'
-          }} />
+          {currentView !== 'home' && (
+            <WalletMultiButton style={{ 
+              height: '38px', 
+              backgroundColor: 'rgba(255,255,255,0.05)', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              fontWeight: 800,
+              letterSpacing: '0.2em'
+            }} />
+          )}
         </div>
       </nav>
 

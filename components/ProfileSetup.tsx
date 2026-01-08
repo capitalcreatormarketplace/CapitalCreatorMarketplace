@@ -567,7 +567,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
             </form>
           )}
         </div>
-      </div>
+      )}
+    </div>
     );
   }; 
 

@@ -1,78 +1,108 @@
-
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  clusterApiUrl,
+} from '@solana/web3.js';
+import {
+  getOrCreateAssociatedTokenAccount,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import { TREASURY_WALLET, PLATFORM_FEE_PERCENT } from '../constants';
 import { TransactionResult } from '../types';
+import { WalletContextState } from '@solana/wallet-adapter-react';
 
-interface PhantomProvider {
-  isPhantom: boolean;
-  isConnected: boolean;
-  publicKey: { toString: () => string } | null;
-  connect: (options?: { onlyIfTrusted: boolean }) => Promise<{ publicKey: { toString: () => string } }>;
-  disconnect: () => Promise<void>;
-  signMessage: (message: Uint8Array, encoding: string) => Promise<{ signature: Uint8Array }>;
-}
-
-const getProvider = (): PhantomProvider | undefined => {
-  if (typeof window !== 'undefined' && 'solana' in window) {
-    const provider = (window as any).solana;
-    if (provider?.isPhantom) return provider;
-  }
-  return undefined;
-};
+// Mainnet USDC Mint Address
+const USDC_MINT_ADDRESS = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyB7uP3');
 
 export async function processPayment(
+  wallet: WalletContextState,
   creatorAddress: string,
   amountUsdc: number
 ): Promise<TransactionResult> {
-  // Mocking the payment split logic for the demo environment
-  const totalAtomic = amountUsdc * 1_000_000;
-  const tenPercent = Math.floor(totalAtomic * PLATFORM_FEE_PERCENT);
-  const creatorAmount = totalAtomic - tenPercent;
-
-  console.log(`Split route: ${creatorAmount / 1e6} to creator, ${tenPercent / 1e6} to protocol treasury.`);
-
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  return {
-    success: true,
-    signature: Math.random().toString(36).substring(2, 15)
-  };
-}
-
-export async function connectWallet(): Promise<string | null> {
-  const provider = getProvider();
-  
-  if (!provider) {
-    alert('Phantom wallet not detected. Install the extension to proceed.');
-    window.open('https://phantom.app/', '_blank');
-    return null;
+  if (!wallet.publicKey || !wallet.sendTransaction) {
+    throw new Error('Wallet is not connected or does not support sending transactions.');
   }
+  
+  const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+  const creatorPublicKey = new PublicKey(creatorAddress);
+  const treasuryPublicKey = new PublicKey(TREASURY_WALLET);
+  const sponsorPublicKey = wallet.publicKey;
 
   try {
-    // 1. Establish connection (Forcing a fresh request)
-    const response = await provider.connect();
-    const pubKey = response.publicKey.toString();
+    // 1. Calculate payment split
+    const totalAmount = Math.floor(amountUsdc * 1_000_000); // USDC has 6 decimals
+    const treasuryFee = Math.floor(totalAmount * PLATFORM_FEE_PERCENT);
+    const creatorAmount = totalAmount - treasuryFee;
 
-    // 2. Mandatory Signature Verification (The step requested to be permanent)
-    // We use a unique message each time to ensure the wallet actually prompts the user
-    const message = new TextEncoder().encode(`Verify Ownership for Capital Creator Protocol\nTimestamp: ${Date.now()}\nTerminal Access: Authorized`);
-    await provider.signMessage(message, 'utf8');
+    // 2. Get or create the associated token accounts for all parties.
+    // The sponsor (payer) must have an account, the others will be created if they don't exist.
+    const sponsorUsdcAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      sponsorPublicKey, // Payer
+      USDC_MINT_ADDRESS,
+      sponsorPublicKey,
+      false // Allow owner off curve
+    );
+
+    const creatorUsdcAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      sponsorPublicKey, // Payer
+      USDC_MINT_ADDRESS,
+      creatorPublicKey,
+      false
+    );
+
+    const treasuryUsdcAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      sponsorPublicKey, // Payer
+      USDC_MINT_ADDRESS,
+      treasuryPublicKey,
+      false
+    );
     
-    console.log('Wallet verified and signed:', pubKey);
-    return pubKey;
-  } catch (err: any) {
-    console.error('Wallet connection or signing rejected:', err);
-    return null;
-  }
-}
+    // 3. Create the transaction and add transfer instructions
+    const transaction = new Transaction();
 
-export async function disconnectWallet(): Promise<void> {
-  const provider = getProvider();
-  if (provider?.disconnect) {
-    try {
-      await provider.disconnect();
-      console.log('Phantom session terminated.');
-    } catch (err) {
-      console.error('Wallet disconnect failed:', err);
-    }
+    // Instruction to pay the creator
+    transaction.add(
+      createTransferInstruction(
+        sponsorUsdcAccount.address,
+        creatorUsdcAccount.address,
+        sponsorPublicKey,
+        creatorAmount
+      )
+    );
+
+    // Instruction to pay the treasury
+    transaction.add(
+      createTransferInstruction(
+        sponsorUsdcAccount.address,
+        treasuryUsdcAccount.address,
+        sponsorPublicKey,
+        treasuryFee
+      )
+    );
+
+    // 4. Get a recent blockhash and sign, send, and confirm the transaction
+    transaction.feePayer = sponsorPublicKey;
+    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+    const signature = await wallet.sendTransaction(transaction, connection);
+    await connection.confirmTransaction(signature, 'processed');
+
+    console.log(`Transaction successful! Signature: ${signature}`);
+    return {
+      success: true,
+      signature: signature,
+    };
+  } catch (error: any) {
+    console.error('Solana payment failed:', error);
+    return {
+      success: false,
+      signature: error.message || 'An unknown error occurred.',
+    };
   }
 }

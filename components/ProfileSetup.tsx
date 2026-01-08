@@ -1,8 +1,12 @@
 
+
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
-import { Icons } from '../constants';
+// FIX: import TREASURY_WALLET to pay the listing fee to the correct address
+import { Icons, TREASURY_WALLET } from '../constants';
 import { processPayment } from '../services/solana';
+// FIX: import useWallet hook to get wallet context for transactions
+import { useWallet } from '@solana/wallet-adapter-react';
 
 interface ProfileSetupProps {
   profile: UserProfile;
@@ -19,6 +23,8 @@ const PLATFORM_OPTIONS = [
 ];
 
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
+  // FIX: Get wallet context to be used in payment processing
+  const wallet = useWallet();
   const [isEditing, setIsEditing] = useState(!profile.name);
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [isListing, setIsListing] = useState(false);
@@ -147,6 +153,10 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
   const handleListSubmit = async () => {
     if (!invData.streamPreviewUrl) return alert("Please upload a stream preview image first.");
     if (invData.platforms.length === 0) return alert("Please select at least one streaming platform.");
+    if (!wallet.publicKey) {
+      alert("Please connect your wallet to list an item.");
+      return;
+    }
     const d = new Date(availableDays[selectedDayIdx]);
     let hourNum = parseInt(selectedTime.hour);
     if (selectedTime.period === 'PM' && hourNum !== 12) hourNum += 12;
@@ -156,7 +166,9 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     const utcTime = new Date(d.getTime() - (tz.offset * 60 * 60 * 1000));
     setIsListing(true);
     try {
-      const result = await processPayment(profile.address, 0.01);
+      // FIX: The processPayment function requires 3 arguments. The wallet context is now provided.
+      // The listing fee should be paid to the platform treasury, not the creator's own address.
+      const result = await processPayment(wallet, TREASURY_WALLET, 0.01);
       if (result.success) onListInventory({ ...invData, streamTime: utcTime.toISOString() });
     } catch (e) {
       alert("Payment failed.");

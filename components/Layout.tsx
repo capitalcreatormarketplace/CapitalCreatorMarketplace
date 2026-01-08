@@ -1,31 +1,16 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Icons } from '../constants';
 
 interface LayoutProps {
   children: React.ReactNode;
-  walletAddress: string | null;
-  onConnect: () => void;
-  onDisconnect: () => void;
   onNavigate: (view: string) => void;
   currentView: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, walletAddress, onConnect, onDisconnect, onNavigate, currentView }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+const Layout: React.FC<LayoutProps> = ({ children, onNavigate, currentView }) => {
+  const { publicKey } = useWallet();
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -56,42 +41,24 @@ const Layout: React.FC<LayoutProps> = ({ children, walletAddress, onConnect, onD
           >
             DOCUMENTS
           </button>
+           {publicKey && (
+             <button 
+                onClick={() => onNavigate('profile')}
+                className={`text-[9.7px] font-bold hover:text-white transition-all uppercase tracking-[0.3em] ${currentView === 'profile' ? 'text-white underline underline-offset-4' : 'text-gray-500'}`}
+             >
+                PROFILE
+             </button>
+           )}
 
-          {walletAddress ? (
-            <div className="relative" ref={dropdownRef}>
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 bg-white/5 pl-4 pr-3 py-2 border border-white/10 hover:border-white/30 transition-all group"
-              >
-                <div className="w-1.5 h-1.5 bg-white opacity-50 group-hover:opacity-100"></div>
-                <span className="mono text-[8.2px] tracking-tight opacity-70 group-hover:opacity-100">
-                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                </span>
-                <Icons.ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 glass rounded-none border-white/10 shadow-xl animate-fadeIn z-[60]">
-                  <div className="p-2 space-y-1">
-                    <button onClick={() => { onNavigate('profile'); setIsDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[10px] font-bold tracking-widest uppercase hover:bg-white/5 transition-colors">
-                      Profile
-                    </button>
-                    <button onClick={() => { onDisconnect(); setIsDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[10px] font-bold tracking-widest uppercase hover:bg-white/5 transition-colors text-red-400">
-                      Disconnect
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            (currentView === 'marketplace' || currentView === 'profile') && (
-              <button 
-                onClick={onConnect}
-                className="bg-white text-black px-5 py-2 text-[8.2px] font-black uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all"
-              >
-                Connect Wallet
-              </button>
-            )
-          )}
+          <WalletMultiButton style={{ 
+            height: '38px', 
+            backgroundColor: 'rgba(255,255,255,0.05)', 
+            border: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '10px',
+            textTransform: 'uppercase',
+            fontWeight: 800,
+            letterSpacing: '0.2em'
+          }} />
         </div>
       </nav>
 

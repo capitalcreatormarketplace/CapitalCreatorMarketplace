@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Icons } from '../constants';

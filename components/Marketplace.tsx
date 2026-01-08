@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import * as React from 'react';
 import { InventoryItem, SponsorStatus, AdPosition, ContentCategory, ItemStatus } from '../types';
 
 interface MarketplaceProps {
@@ -30,16 +29,16 @@ const AdBadge: React.FC<{ position: AdPosition; isPreview?: boolean }> = ({ posi
 };
 
 const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurchase, loading }) => {
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [showEnded, setShowEnded] = useState(false);
+  const [selectedItem, setSelectedItem] = React.useState<InventoryItem | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const [showEnded, setShowEnded] = React.useState(false);
   
-  const [filterCategory, setFilterCategory] = useState<string>('ALL');
-  const [filterPlatform, setFilterPlatform] = useState<string>('ALL');
-  const [filterDay, setFilterDay] = useState<string>('ALL');
-  const [filterTime, setFilterTime] = useState<string>('ALL');
+  const [filterCategory, setFilterCategory] = React.useState<string>('ALL');
+  const [filterPlatform, setFilterPlatform] = React.useState<string>('ALL');
+  const [filterDay, setFilterDay] = React.useState<string>('ALL');
+  const [filterTime, setFilterTime] = React.useState<string>('ALL');
 
-  const filteredItems = useMemo(() => {
+  const filteredItems = React.useMemo(() => {
     return items.filter(item => {
       // Primary filter: Active vs. Ended
       const isEnded = item.status === ItemStatus.SOLD || item.status === ItemStatus.EXPIRED;

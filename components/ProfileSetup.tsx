@@ -1,6 +1,4 @@
-
-
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import * as React from 'react';
 import { UserProfile, UserRole, SponsorApplication, SponsorStatus, ContentCategory, AdPosition } from '../types';
 // FIX: import TREASURY_WALLET to pay the listing fee to the correct address
 import { Icons, TREASURY_WALLET } from '../constants';
@@ -25,25 +23,25 @@ const PLATFORM_OPTIONS = [
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSaveProfile, onApplySponsor, onListInventory }) => {
   // FIX: Get wallet context to be used in payment processing
   const wallet = useWallet();
-  const [isEditing, setIsEditing] = useState(!profile.name);
-  const [formData, setFormData] = useState<UserProfile>(profile);
-  const [isListing, setIsListing] = useState(false);
+  const [isEditing, setIsEditing] = React.useState(!profile.name);
+  const [formData, setFormData] = React.useState<UserProfile>(profile);
+  const [isListing, setIsListing] = React.useState(false);
   
-  const [verificationStep, setVerificationStep] = useState<'IDLE' | 'CHALLENGE' | 'SCANNING' | 'VERIFIED'>(profile.isXVerified ? 'VERIFIED' : 'IDLE');
-  const [tempHandle, setTempHandle] = useState(profile.xHandle || '');
-  const [tweetUrl, setTweetUrl] = useState('');
-  const [verifyCode] = useState(() => `CAPITAL-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
+  const [verificationStep, setVerificationStep] = React.useState<'IDLE' | 'CHALLENGE' | 'SCANNING' | 'VERIFIED'>(profile.isXVerified ? 'VERIFIED' : 'IDLE');
+  const [tempHandle, setTempHandle] = React.useState(profile.xHandle || '');
+  const [tweetUrl, setTweetUrl] = React.useState('');
+  const [verifyCode] = React.useState(() => `CAPITAL-${Math.random().toString(36).substring(2, 6).toUpperCase()}`);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const streamImgRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const streamImgRef = React.useRef<HTMLInputElement>(null);
   
-  const [appData, setAppData] = useState<SponsorApplication>(
+  const [appData, setAppData] = React.useState<SponsorApplication>(
     sponsorApp || {
       name: '', companyName: '', monthsInBusiness: 0, logoUrl: '', status: SponsorStatus.NONE
     }
   );
 
-  const availableDays = useMemo(() => {
+  const availableDays = React.useMemo(() => {
     const days = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date();
@@ -53,8 +51,8 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     return days;
   }, []);
 
-  const [selectedDayIdx, setSelectedDayIdx] = useState<number>(0);
-  const [selectedTime, setSelectedTime] = useState({
+  const [selectedDayIdx, setSelectedDayIdx] = React.useState<number>(0);
+  const [selectedTime, setSelectedTime] = React.useState({
     hour: '12', minute: '00', period: 'PM', timezone: 'UTC'
   });
 
@@ -67,7 +65,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
     { label: 'JST (UTC+9)', offset: 9 }, { label: 'AEDT (UTC+11)', offset: 11 },
   ];
 
-  const [invData, setInvData] = useState({
+  const [invData, setInvData] = React.useState({
     streamTime: '', placementDetail: '', priceSol: 100, platforms: [] as string[],
     category: ContentCategory.CRYPTO, adPosition: 'bottom-right' as AdPosition, streamPreviewUrl: ''
   });

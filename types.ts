@@ -22,24 +22,36 @@ export enum ContentCategory {
   ENTERTAINMENT = 'ENTERTAINMENT'
 }
 
+export enum ItemStatus {
+  AVAILABLE = 'AVAILABLE',
+  SOLD = 'SOLD',
+  EXPIRED = 'EXPIRED'
+}
+
+export interface UserNotification {
+  id: string;
+  message: string;
+  timestamp: number;
+  read: boolean;
+}
+
 export interface UserProfile {
   address: string;
   name: string;
   bio: string;
   role: UserRole;
   avatarUrl?: string;
-  // New Brand/Creator Fields
-  platforms?: string[]; // Array for multi-platform support
+  platforms?: string[];
   channelLink?: string;
-  xHandle?: string;      // New field for verified X handle
-  isXVerified?: boolean; // New field for verification status
+  xHandle?: string;
+  isXVerified?: boolean;
   niche?: string;
   timezone?: string;
   schedule?: string;
-  // Creator Metrics
   revenueEarned?: number;
   timesHired?: number;
   avgAudienceSize?: number;
+  notifications?: UserNotification[];
 }
 
 export interface SponsorApplication {
@@ -56,12 +68,12 @@ export interface InventoryItem {
   id: string;
   creatorAddress: string;
   creatorName: string;
-  streamTime: string; // Display string
-  timestamp: number;   // For filtering logic
+  streamTime: string;
+  timestamp: number;
   placementDetail: string;
   priceSol: number; 
-  sold: boolean;
-  platforms: string[]; // Array for multi-platform support
+  status: ItemStatus;
+  platforms: string[];
   category: ContentCategory;
   thumbnailUrl: string;
   adPosition: AdPosition;

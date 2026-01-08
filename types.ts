@@ -28,6 +28,7 @@ export interface UserProfile {
   bio: string;
   role: UserRole;
   avatarUrl?: string;
+  email?: string;
   // New Brand/Creator Fields
   platforms?: string[]; // Array for multi-platform support
   channelLink?: string;

@@ -216,17 +216,32 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
 
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                 <div className="md:col-span-7 space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] uppercase text-zinc-600 font-black tracking-widest">Identity Label (Brand Name)</label>
-                    <div className="bg-black/60 border border-white/10 p-4 h-[65px] flex items-center focus-within:border-[#BF953F]/40 transition-all">
-                      <input 
-                        type="text" 
-                        placeholder="E.G. CAPITALCREATOR0" 
-                        className="w-full bg-transparent text-lg md:text-xl font-black uppercase tracking-tight outline-none text-white placeholder:text-zinc-800" 
-                        value={formData.name} 
-                        onChange={e => setFormData({...formData, name: e.target.value.toUpperCase()})} 
-                        required 
-                      />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase text-zinc-600 font-black tracking-widest">Identity Label</label>
+                      <div className="bg-black/60 border border-white/10 p-4 h-[65px] flex items-center focus-within:border-[#BF953F]/40 transition-all">
+                        <input 
+                          type="text" 
+                          placeholder="E.G. CAPITALCREATOR" 
+                          className="w-full bg-transparent text-lg font-black uppercase tracking-tight outline-none text-white placeholder:text-zinc-800" 
+                          value={formData.name} 
+                          onChange={e => setFormData({...formData, name: e.target.value.toUpperCase()})} 
+                          required 
+                        />
+                      </div>
+                    </div>
+                     <div className="space-y-2">
+                      <label className="text-[9px] uppercase text-zinc-600 font-black tracking-widest">Contact Email</label>
+                      <div className="bg-black/60 border border-white/10 p-4 h-[65px] flex items-center focus-within:border-[#BF953F]/40 transition-all">
+                        <input 
+                          type="email" 
+                          placeholder="FOR NOTIFICATIONS" 
+                          className="w-full bg-transparent text-sm font-bold uppercase tracking-tight outline-none text-white placeholder:text-zinc-800" 
+                          value={formData.email || ''} 
+                          onChange={e => setFormData({...formData, email: e.target.value})} 
+                          required 
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -366,23 +381,34 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, sponsorApp, onSave
           <div className="flex-grow w-full text-center md:text-left">
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <h2 className="text-3xl font-black uppercase tracking-tight text-white leading-none">{profile.name}</h2>
-                  {profile.isXVerified && (
-                    <a 
-                      href={profile.channelLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-flex items-center gap-2 text-[#1DA1F2] hover:brightness-125 transition-all group"
-                    >
-                      <Icons.Check className="w-4 h-4 shrink-0 drop-shadow-[0_0_5px_rgba(29,161,242,0.4)]" />
-                      <span className="text-[10px] font-black uppercase tracking-widest border-b border-[#1DA1F2]/20 group-hover:border-[#1DA1F2]/60">{profile.xHandle}</span>
-                    </a>
-                  )}
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1">
+                    {profile.isXVerified && (
+                      <a 
+                        href={profile.channelLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-2 text-[#1DA1F2] hover:brightness-125 transition-all group"
+                      >
+                        <Icons.Check className="w-4 h-4 shrink-0 drop-shadow-[0_0_5px_rgba(29,161,242,0.4)]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest border-b border-[#1DA1F2]/20 group-hover:border-[#1DA1F2]/60">{profile.xHandle}</span>
+                      </a>
+                    )}
+                    {profile.email && (
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{profile.email}</span>
+                    )}
+                  </div>
                 </div>
-                <button onClick={() => setIsEditing(true)} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest border border-white/5 px-4 py-2 transition-all bg-black/40">Edit Terminal</button>
+                <div className="flex items-center gap-4">
+                  <button className="relative text-zinc-600 hover:text-white transition-colors">
+                    <Icons.Bell className="w-6 h-6" />
+                    <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-black"></div>
+                  </button>
+                  <button onClick={() => setIsEditing(true)} className="text-[9px] text-zinc-500 hover:text-white uppercase font-black tracking-widest border border-white/5 px-4 py-2 transition-all bg-black/40">Edit Terminal</button>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
                 <div className="flex flex-wrap gap-1.5">
                   {(profile.platforms || []).map(p => (
                     <span key={p} className="text-[8px] bg-white/5 text-zinc-400 px-3 py-1 font-black uppercase tracking-widest border border-white/5">{p}</span>

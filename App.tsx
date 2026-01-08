@@ -128,6 +128,7 @@ const App: React.FC = () => {
           address: addr,
           name: '',
           bio: '',
+          email: '',
           role: UserRole.UNDEFINED,
           revenueEarned: 0,
           timesHired: 0,

@@ -256,7 +256,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({ items, sponsorStatus, onPurch
                 <div className="space-y-2">
                    <h2 className="text-[10px] uppercase text-zinc-500 font-black tracking-[0.4em]">Identity</h2>
                    <p className="text-4xl font-black uppercase tracking-tighter text-white leading-none">{selectedItem.creatorName}</p>
-                   <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mt-2">{selectedItem.creatorAddress}</p>
                 </div>
                 <div className="space-y-6">
                    <div className="grid grid-cols-2 gap-6">
